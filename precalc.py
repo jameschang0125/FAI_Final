@@ -1,4 +1,4 @@
 from pre.winrater import winRater as WR
 
 # WR.allWR()
-WR.paraWR()
+WR.paraWR(n = 100) # for testing purpose
