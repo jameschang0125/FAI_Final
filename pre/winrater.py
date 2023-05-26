@@ -71,7 +71,7 @@ class winRater():
         for xi, xj, yi, yj in product(range(13), range(13), range(13), range(13)):
             work.append(((xi, xj), (yi, yj)))
 
-        singleWR = partialmethod(self.wr, v = v == 2, **kwargs)
+        singleWR = partialmethod(self.wr, v = v == 2, **kwargs).__get__(self)
         ret = process_map(singleWR, work, max_workers = workers)
 
         for i in range(len(work)):
