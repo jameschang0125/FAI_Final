@@ -9,11 +9,20 @@ from functools import partialmethod
 from tqdm.contrib.concurrent import process_map
 
 class winRater():
-    def __init__(self):
-        pass
+    def __init__(self, loadpath = "pre/res/wr5.pickle"):
+        if loadpath: 
+            with open(loadpath, 'rb') as f:
+                self.wrTable = pickle.load(f)
     
+    def wr(self, x, y):
+        return self.wrTable[x[0]][x[1]][y[0]][y[1]]
+    
+    def dumpInfo(self):
+        if self.wrTable is not None:
+            print(self.wrTable)
+
     @classmethod
-    def wr(self, xy, v = False, n = 10000, **kwargs):
+    def __wr(self, xy, v = False, n = 10000, **kwargs):
         '''
         x, y: both (0 ~ 12, 0 ~ 12)
         v: verbose
@@ -50,7 +59,7 @@ class winRater():
         if v == 1: iterator = tqdm(iterator, total = 13 ** 4)
 
         for xi, xj, yi, yj in iterator:
-            ans[xi][xj][yi][yj] = self.wr(((xi, xj), (yi, yj)), v == 2, **kwargs)
+            ans[xi][xj][yi][yj] = self.__wr(((xi, xj), (yi, yj)), v == 2, **kwargs)
         
         if dumppath is not None:
             with open(dumppath, 'wb') as f:
@@ -71,7 +80,7 @@ class winRater():
         for xi, xj, yi, yj in product(range(13), range(13), range(13), range(13)):
             work.append(((xi, xj), (yi, yj)))
 
-        singleWR = partialmethod(self.wr, v = v == 2, **kwargs).__get__(self)
+        singleWR = partialmethod(self.__wr, v = v == 2, **kwargs).__get__(self)
         ret = process_map(singleWR, work, max_workers = workers)
 
         for i in range(len(work)):
