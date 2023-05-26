@@ -71,7 +71,7 @@ class winRater():
     def paraWR(self, v = 0, dumppath = "pre/res/wr5.pickle", workers = 70, **kwargs):
         '''
         same as allWR, but multiprocess
-        WARN: verbose settings has no effect on this
+        [WARN] verbose settings has no effect on this
         '''
 
         ans = np.zeros((13, 13, 13, 13))
