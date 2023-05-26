@@ -45,7 +45,7 @@ class winRater():
         ans = np.zeros((13, 13, 13, 13))
 
         iterator = product(range(13), range(13), range(13), range(13))
-        if v == 1: iterator = tqdm(iterator)
+        if v == 1: iterator = tqdm(iterator, total = 13 ** 4)
 
         for xi, xj, yi, yj in iterator:
             ans[xi][xj][yi][yj] = self.wr((xi, xj), (yi, yj), v == 2, **kwargs)
