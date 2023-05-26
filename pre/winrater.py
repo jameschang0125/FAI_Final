@@ -5,18 +5,20 @@ from pre.hand_processer import HandProcesser as HP
 from tqdm import tqdm
 import numpy as np
 from itertools import product
+from functools import partialmethod
+from tqdm.contrib.concurrent import process_map
 
 class winRater():
     def __init__(self):
         pass
     
     @classmethod
-    def wr(self, x, y, v = False, n = 10000, **kwargs):
+    def wr(self, xy, v = False, n = 10000, **kwargs):
         '''
         x, y: both (0 ~ 12, 0 ~ 12)
         v: verbose
         '''
-
+        x, y = xy
         if x == y:
             return .5
         
@@ -48,7 +50,7 @@ class winRater():
         if v == 1: iterator = tqdm(iterator, total = 13 ** 4)
 
         for xi, xj, yi, yj in iterator:
-            ans[xi][xj][yi][yj] = self.wr((xi, xj), (yi, yj), v == 2, **kwargs)
+            ans[xi][xj][yi][yj] = self.wr(((xi, xj), (yi, yj)), v == 2, **kwargs)
         
         if dumppath is not None:
             with open(dumppath, 'wb') as f:
@@ -56,5 +58,29 @@ class winRater():
 
         return ans
     
+    @classmethod
+    def paraWR(self, v = 0, dumppath = "pre/res/wr5.pickle", workers = 70, **kwargs):
+        '''
+        same as allWR, but multiprocess
+        WARN: verbose settings has no effect on this
+        '''
 
+        ans = np.zeros((13, 13, 13, 13))
 
+        work = []
+        for xi, xj, yi, yj in product(range(13), range(13), range(13), range(13)):
+            work.append(((xi, xj), (yi, yj)))
+
+        singleWR = partialmethod(self.wr, v = v == 2, **kwargs)
+        ret = process_map(singleWR, work, max_workers = workers)
+
+        for i in range(len(work)):
+            xi, xj = work[i][0]
+            yi, yj = work[i][1]
+            ans[xi][xj][yi][yj] = ret[i]
+
+        if dumppath is not None:
+            with open(dumppath, 'wb') as f:
+                pickle.dump(ans, f)
+
+        return ans
