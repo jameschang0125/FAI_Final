@@ -25,7 +25,7 @@ class winRater():
             print(self.wrTable)
 
     @classmethod
-    def __wr(self, xy, v = False, n = 10000, **kwargs):
+    def _wr(self, xy, v = False, n = 10000, **kwargs):
         '''
         x, y: both (0 ~ 12, 0 ~ 12)
         v: verbose
@@ -62,7 +62,7 @@ class winRater():
         if v == 1: iterator = tqdm(iterator, total = 13 ** 4)
 
         for xi, xj, yi, yj in iterator:
-            ans[xi][xj][yi][yj] = self.__wr(((xi, xj), (yi, yj)), v == 2, **kwargs)
+            ans[xi][xj][yi][yj] = self._wr(((xi, xj), (yi, yj)), v == 2, **kwargs)
         
         if dumppath is not None:
             with open(dumppath, 'wb') as f:
@@ -81,15 +81,20 @@ class winRater():
 
         work = []
         for xi, xj, yi, yj in product(range(13), range(13), range(13), range(13)):
-            work.append(((xi, xj), (yi, yj)))
+            if (xi, xj) >= (yi, yj):
+                work.append(((xi, xj), (yi, yj)))
 
-        singleWR = partialmethod(self.__wr, v = v == 2, **kwargs).__get__(self)
-        ret = process_map(singleWR, work, max_workers = workers)
+        singleWR = partialmethod(self._wr, v = v == 2, **kwargs).__get__(self)
+        ret = process_map(singleWR, work, max_workers = workers, chunksize = 10)
 
         for i in range(len(work)):
             xi, xj = work[i][0]
             yi, yj = work[i][1]
             ans[xi][xj][yi][yj] = ret[i]
+
+        for xi, xj, yi, yj in product(range(13), range(13), range(13), range(13)):
+            if (xi, xj) < (yi, yj):
+                ans[xi][xj][yi][yj] = 1 - ans[yi][yj][xi][xj]
 
         if dumppath is not None:
             with open(dumppath, 'wb') as f:

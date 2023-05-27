@@ -11,7 +11,7 @@ class HandProcesser():
     @classmethod
     def genHand(self, x, y):
         if x >= y: # XYo or XX
-            a, b = sample(np.arange(4), 2)
+            a, b = sample(range(4), 2)
             return [Card(a, x), Card(b, y)]
         if x < y: # XYs
             a = randint(4)
