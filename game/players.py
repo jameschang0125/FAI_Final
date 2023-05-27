@@ -57,11 +57,17 @@ class BasePokerPlayer(object):
         """Called from Dealer when ask message received from RoundManager"""
         valid_actions, hole_card, round_state = self.__parse_ask_message(message)
 
+        # [MODIFIED] SHOW ERROR
+        action, amount = self.declare_action(valid_actions, hole_card, round_state)
+
+        '''
         try:
             with timeout(5):
                 action, amount = self.declare_action(valid_actions, hole_card, round_state)
         except:
             action, amount = valid_actions[0]["action"], valid_actions[0]["amount"]
+        '''
+
         return action, amount
 
     def receive_notification(self, message):

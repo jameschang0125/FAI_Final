@@ -2,6 +2,7 @@ from game.engine.hand_evaluator import HandEvaluator as HE
 from game.engine.card import Card
 from numpy.random import choice, randint
 import numpy as np
+from random import sample
 
 class HandProcesser():
     def __init__(self):
@@ -10,7 +11,7 @@ class HandProcesser():
     @classmethod
     def genHand(self, x, y):
         if x >= y: # XYo or XX
-            a, b = choice(np.arange(4), 2)
+            a, b = sample(np.arange(4), 2)
             return [Card(a, x), Card(b, y)]
         if x < y: # XYs
             a = randint(4)

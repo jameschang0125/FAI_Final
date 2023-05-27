@@ -14,9 +14,12 @@ class winRater():
             with open(loadpath, 'rb') as f:
                 self.wrTable = pickle.load(f)
     
-    def wr(self, x, y):
+    def rawwr(self, x, y):
         return self.wrTable[x[0]][x[1]][y[0]][y[1]]
     
+    def wr(self, x, y):
+        return self.wrTable[x % 13][x // 13][y % 13][y // 13]
+
     def dumpInfo(self):
         if self.wrTable is not None:
             print(self.wrTable)
