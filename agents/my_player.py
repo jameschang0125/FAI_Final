@@ -22,7 +22,7 @@ class MyPlayer(BasePokerPlayer):
 
                 # switch c[hand] : F, C, A 
                 myh = self.SS.h2h2i(self.cards)
-                # print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
+                print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
                 if c[myh] == 2: return self.A()
                 else: return self.C() if c[myh] == 1 else self.F()
             else:
@@ -31,7 +31,7 @@ class MyPlayer(BasePokerPlayer):
 
                 # if hand <= a : A else F
                 myh = self.SS.h2h2i(self.cards)
-                # print(f"[DEBUG] SB: myh = {myh}, a = {a}")
+                print(f"[DEBUG] SB: myh = {myh}, a = {a}")
                 return self.A() if myh <= a else self.F()
         else:
             return self.CF() # temp
