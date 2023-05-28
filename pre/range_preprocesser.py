@@ -5,6 +5,8 @@ from tqdm import tqdm
 from itertools import product
 from functools import partialmethod
 
+from eqcalc.search import searcher as SS # SS.h2s
+
 class RangePreProcesser():
     nHands = 13 * 13
 
@@ -23,9 +25,9 @@ class RangePreProcesser():
         '''
         self.buildFreqTable()
         wr = self.avgrwr(**kwargs)
-        hand2id = np.flip(np.argsort(wr))
-        id2hand = np.zeros(self.nHands, dtype = 'int16')
-        id2hand[hand2id] = np.arange(self.nHands)
+        id2hand = np.flip(np.argsort(wr))
+        hand2id = np.zeros(self.nHands, dtype = 'int16')
+        hand2id[id2hand] = np.arange(self.nHands)
 
         wrtable = np.zeros((self.nHands, self.nHands))
         freqs = np.zeros((self.nHands, self.nHands))
@@ -45,8 +47,9 @@ class RangePreProcesser():
             pickle.dump(wrtable, f)
 
         # DEBUG
-        print(wrtable)
         print(id2hand)
+        print(wrtable[0].tolist())
+        print([SS.h2s(h) for h in id2hand])
 
     def avgrwr(self, cutoffs = [0.1, 0.2, 0.4, 0.7, 1], **kwargs):
         ans = np.zeros(self.nHands)

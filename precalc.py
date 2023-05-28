@@ -3,9 +3,9 @@ from pre.range_preprocesser import RangePreProcesser as RPP
 from eqcalc.test import testrs
 
 # WR.allWR()
-WR.paraWR(n = 100000, dumppath = "pre/res/wr5_100k.pickle")
+# WR.paraWR(n = 100000, dumppath = "pre/res/wr5_100k.pickle")
 # WR().dumpInfo()
-# print(WR().wrTable[0][0])
+# print(WR().wrTable[12][12]) # AA vs others
 
 # RPP().gen()
 # testrs()

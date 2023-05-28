@@ -14,13 +14,14 @@ class researcher():
     (BB R -- SB F/C/A)
     (BB C -- SB C/R -- BB F/C/A)
     
-    ranges are: C(52, 2) -> prob
+    We suppose that raise range is LINEAR. This affects the performance but accelerate a lot.
     '''
 
+    nHands = 26 * 51
+
     def CR(self, myr, oppr, state, pot, bet):
-        '''
-        iterative
-        '''
+        
+
 
         
 

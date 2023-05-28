@@ -8,8 +8,9 @@ from itertools import product
 from functools import partialmethod
 from tqdm.contrib.concurrent import process_map
 
+
 class winRater():
-    def __init__(self, loadpath = "pre/res/wr5.pickle"):
+    def __init__(self, loadpath = "pre/res/wr5_100k.pickle"):
         if loadpath: 
             with open(loadpath, 'rb') as f:
                 self.wrTable = pickle.load(f)

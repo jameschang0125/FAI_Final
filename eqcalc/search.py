@@ -16,11 +16,8 @@ class searcher():
         self.RP = RP()
         self.pen = pen
 
-    def i2s(self, i):
-        '''
-        id to string
-        '''
-        h = self.i2h(i)
+    @classmethod
+    def h2s(self, h):
         x, y = h % 13, h // 13
         if x < y:
             x, y = y, x
@@ -30,6 +27,12 @@ class searcher():
         else:
             s = 'o'
         return "23456789TJQKA"[x] + "23456789TJQKA"[y] + s
+
+    def i2s(self, i):
+        '''
+        id to string
+        '''
+        return self.h2s(self.i2h(i))
     
     def r2s(self, r):
         sols = np.where(r == 2)[0]
