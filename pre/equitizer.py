@@ -59,6 +59,9 @@ class Equitizer():
         '''
         if turn == 0:
             self.eq[0][140] = 0.5
+            for i in range(141, 140 + 145 + 1):
+                self.eq[0][i] = 1
+            return
 
         work = np.arange(140 + 145 + 1)
         calc = partialmethod(self._calc, turn).__get__(self)

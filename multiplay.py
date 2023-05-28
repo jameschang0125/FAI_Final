@@ -23,6 +23,6 @@ def play(id):
     return 0.5
 
 if __name__ == '__main__':
-    N = 1000
-    r = process_map(play, range(N), max_workers = 70)
+    N = 100
+    r = process_map(play, range(N), max_workers = 20)
     print(f"p1 winrate = {np.sum(r) / N}")
