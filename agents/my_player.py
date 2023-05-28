@@ -6,11 +6,12 @@ from pre.equireader import Equireader as EQ
 
 
 class MyPlayer(BasePokerPlayer):
-    def __init__(self, debug = True):
+    def __init__(self, debug = False, showhand = False):
         self.SS = SS()
         self.isBB = None
         self.EQ = EQ()
         self.debug = debug
+        self.showhand = showhand
 
     def declare_action(self, valid_actions, hole_card, round_state):
         self.valids = valid_actions
@@ -64,7 +65,7 @@ class MyPlayer(BasePokerPlayer):
         pass
 
     def receive_round_start_message(self, round_count, hole_card, seats):
-        if self.debug: print(hole_card)
+        if self.showhand: print(hole_card)
         self.cards = [Card.from_str(c) for c in hole_card]
         self.isBB = seats[0]["uuid"] == self.uuid if self.isBB is None else not self.isBB
         self.turn = 20 - round_count
@@ -89,7 +90,10 @@ class MyPlayer(BasePokerPlayer):
 
 
 def quiet_ai():
-    return MyPlayer(debug = False)
+    return MyPlayer()
+
+def test_ai():
+    return MyPlayer(debug = True, showhand = False)
 
 def setup_ai():
     return MyPlayer()

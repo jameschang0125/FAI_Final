@@ -1,7 +1,8 @@
 from pre.winrater import winRater as WR
 from pre.range_preprocesser import RangePreProcesser as RPP
 from eqcalc.test import testrs
-from pre.equitizer import Equitizer as EQ
+from pre.equitizer import Equitizer as EZ
+from pre.equireader import Equireader as EQ
 
 # WR.allWR()
 # WR.paraWR(n = 100000, dumppath = "pre/res/wr5_100k.pickle")
@@ -11,5 +12,7 @@ from pre.equitizer import Equitizer as EQ
 # RPP().gen()
 # testrs()
 
-EQ().gen()
-
+EZ().gen()
+# eq = EQ()
+# for i in range(850, 1150, 10):
+#    print(f"wr({i}): {eq.wr(18, i)}")

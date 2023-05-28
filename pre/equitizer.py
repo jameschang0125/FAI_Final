@@ -9,8 +9,11 @@ class Equitizer():
     '''
     equity calculator
     '''
+    size = 150
+    offset = 850 # 1000 - size
+
     def __init__(self):
-        self.eq = np.zeros((20, 140 + 145 + 1)) # turn left, BB.chips (BEFORE paying BB) - 860
+        self.eq = np.zeros((20, self.size * 2 + 1)) # turn left, BB.chips (BEFORE paying BB) - 860
     
     @classmethod
     def __thre(self, turn, isBB):
@@ -19,7 +22,7 @@ class Equitizer():
         return x * 5 + y * 10
 
     def wr(self, turn, z):
-        x = z - 860
+        x = z - self.offset
         y = self.__win(turn, x)
         if y is not None: return y
         else:
@@ -27,10 +30,14 @@ class Equitizer():
     
     @classmethod
     def __win(self, turn, x):
-        u, d = 140 + self.__thre(turn, True), 140 - self.__thre(turn, False)
+        u, d = self.size + self.__thre(turn, True), self.size - self.__thre(turn, False)
         if x < d: return 0
         if x > u: return 1
         return None
+
+    @classmethod
+    def _iswin(self, turn, x):
+        return self.__win(turn, x)
 
     def _calc(self, turn, x):
         '''
@@ -42,9 +49,9 @@ class Equitizer():
         if y is not None: return y
 
         ss = SS()
-        state = State(860 + x - 10, True, turn - 1, self)
+        state = State(self.offset + x - 10, True, turn - 1, self)
         u, d = self.__thre(turn, True), -self.__thre(turn, False)
-        possibles = [10, 1000] # [10, np.arange(15, min(u, d)), 1000]
+        possibles = [10, 1000] # [10, 1000] + np.arange(15, min(u, d)).tolist()
         
         v = 2
         for p in possibles:
@@ -58,12 +65,12 @@ class Equitizer():
         Suppose (turn - 1) is calculated
         '''
         if turn == 0:
-            self.eq[0][140] = 0.5
-            for i in range(141, 140 + 145 + 1):
+            self.eq[0][self.size] = 0.5
+            for i in range(self.size + 1, self.size * 2 + 1):
                 self.eq[0][i] = 1
             return
 
-        work = np.arange(140 + 145 + 1)
+        work = np.arange(self.size * 2 + 1)
         calc = partialmethod(self._calc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
         self.eq[turn] = np.array(ret)

@@ -10,3 +10,6 @@ class Equireader(EQ):
         if loadpath: 
             with open(loadpath, 'rb') as f:
                 self.eq = pickle.load(f)
+    
+    def showeq(self, turn):
+        print(self.eq[turn])

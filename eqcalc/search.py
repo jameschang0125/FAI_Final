@@ -61,7 +61,7 @@ class searcher():
 
         # PRE
         fEV = state.wr(self.BB * 1.5)
-        # print(f"fEV = {fEV}")
+        print(f"fEV = {fEV}")
 
         vac = []
         for i in range(0, self.nHands, 10):
@@ -78,16 +78,18 @@ class searcher():
         vac.sort()
         iSet = [vac[j][1] for j in range(3)]
         
-        v, a, c = 2, None, None
+        v, a, c, cc = 2, None, None, None
         for j in iSet:
             for i in range(max(0, j - 5), min(self.nHands, j + 5)):
                 pr = self.RP.rprob(i)
                 vh, ch, cch = self.FCA(bet + self.BB, bet - self.BB, state, i)
                 vh = pr * vh + (1 - pr) * fEV
+
                 if vh < v:
-                    v, a, c = vh, i, ch 
+                    v, a, c, cc = vh, i, ch, cch
 
         # DEBUG
+        print(cc)
         return v, a, c
 
     def FCA(self, pot, bet, state, oppr, iter = 20):
@@ -111,7 +113,7 @@ class searcher():
         # STEP 1
         a, opprc, v = None, None, -1
         for i in range(self.nHands):
-            pr, opprc2 = self.RP.rprob(i), self.Shoved(state, pot, i, r = oppr)
+            pr, opprc2 = self.RP.rprob(i), self.Shoved(state, pot, i, r = oppr + 1)
             opppr = self.RP.rprob(opprc2) / self.RP.rprob(oppr)
             vh = (1 - pr) * fEV + \
                 pr * (opppr * self.RP.rvr(i, opprc2) + (1 - opppr) * state.wr(pot + bet))
@@ -134,7 +136,7 @@ class searcher():
                     myr2[i] = 2 if aEV == best else 1
                 vh += self.RP.prob(i) * best
 
-            opprc3 = self.Shovediscrete(state, pot, myr2 == 2, r = oppr)
+            opprc3 = self.Shovediscrete(state, pot, myr2 == 2, r = oppr + 1)
             opprc, v = (opprc * it + opprc3) / (it + 1), vh
 
         return v, myr2, opprc
