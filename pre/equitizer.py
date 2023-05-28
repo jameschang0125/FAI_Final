@@ -26,7 +26,7 @@ class Equitizer():
     
     @classmethod
     def __win(self, turn, x):
-        u, d = self.__thre(turn, True), -self.__thre(turn, False)
+        u, d = 140 + self.__thre(turn, True), 140 - self.__thre(turn, False)
         if x < d: return 0
         if x > u: return 1
         return None
@@ -76,6 +76,4 @@ class Equitizer():
         # DEBUG
         for i in range(20):
             print(i, ":", self.eq[i], "\n")
-
-        return ans
         
