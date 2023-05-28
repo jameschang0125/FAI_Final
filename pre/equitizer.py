@@ -18,7 +18,8 @@ class Equitizer():
         if not isBB: x, y = y, x
         return x * 5 + y * 10
 
-    def wr(self, turn, x):
+    def wr(self, turn, z):
+        x = z - 860
         y = self.__win(turn, x)
         if y is not None: return y
         else:
