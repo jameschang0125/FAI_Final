@@ -54,17 +54,17 @@ class searcher():
     def h2h2i(self, h):
         return self.h2i(self.h2h(h))
 
-    def FR(self, bet, state):
+    def FR(self, bet, state, verbose = False):
         '''
         bet : bet size for SB
         '''
 
         # PRE
         fEV = state.wr(self.BB * 1.5)
-        # (f"fEV = {fEV}")
+        if verbose: print(f"fEV = {fEV}")
 
         vac = []
-        for i in range(0, self.nHands, 10):
+        for i in list(range(0, self.nHands, 10)) + [self.nHands - 1]:
             pr = self.RP.rprob(i)
             vh, ch, cch = self.FCA(bet + self.BB, bet - self.BB, state, i)
             vh = pr * vh + (1 - pr) * fEV
@@ -85,12 +85,18 @@ class searcher():
                 vh, ch, cch = self.FCA(bet + self.BB, bet - self.BB, state, i)
                 vh = pr * vh + (1 - pr) * fEV
 
+                # DEBUG
+                if i > 160:
+                    print(f"raising with range {i}: (p = {pr})")
+                    print(f"equity = {vh}, BB action: ") 
+                    print(ch, cch)
+
                 if vh < v:
                     v, a, c, cc = vh, i, ch, cch
 
         # DEBUG
         # print(cc)
-        return v, a, c
+        return v, a, c, cc if verbose else v, a, c
 
     def FCA(self, pot, bet, state, oppr, iter = 20):
         '''

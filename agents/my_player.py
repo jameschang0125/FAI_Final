@@ -23,7 +23,7 @@ class MyPlayer(BasePokerPlayer):
             #    return self.F()
             if self.isBB:
                 SBraise = round_state['action_histories']['preflop'][2]['amount']
-                v, a, c = self.SS.FR(SBraise, State(self.my, turn = self.turn, equitizer = self.EQ))
+                v, a, c = self.SS.FR(SBraise, State(self.my, turn = self.turn - 1, equitizer = self.EQ))
 
                 # switch c[hand] : F, C, A 
                 myh = self.SS.h2h2i(self.cards)
@@ -32,7 +32,7 @@ class MyPlayer(BasePokerPlayer):
                 else: return self.C() if c[myh] == 1 else self.F()
             else:
                 SBraise = 1000
-                v, a, c = self.SS.FR(SBraise, State(self.opp, turn = self.turn, equitizer = self.EQ))
+                v, a, c = self.SS.FR(SBraise, State(self.opp, turn = self.turn - 1, equitizer = self.EQ))
 
                 # if hand <= a : A else F
                 myh = self.SS.h2h2i(self.cards)

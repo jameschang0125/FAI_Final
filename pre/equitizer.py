@@ -37,7 +37,7 @@ class Equitizer():
 
     @classmethod
     def _iswin(self, turn, x):
-        return self.__win(turn, x)
+        return self.__win(turn, x - self.offset)
 
     def _calc(self, turn, x):
         '''
