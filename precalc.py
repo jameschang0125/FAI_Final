@@ -8,4 +8,4 @@ from eqcalc.test import testrs
 # print(WR().wrTable[12][12]) # AA vs others
 
 # RPP().gen()
-# testrs()
+testrs()

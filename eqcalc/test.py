@@ -11,7 +11,7 @@ def testrs():
     print(id, ss.i2s(id))
     '''
 
-    for bet in [409]: # [15, 20, 25, 40, 80, 120]:
+    for bet in [15, 20, 25, 40, 80, 200]:
         print(f"\n------- bet = {bet} -------")
         cur = State(990)
         ret = ss.FR(bet, cur)
