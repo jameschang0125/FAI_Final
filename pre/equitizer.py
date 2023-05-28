@@ -62,7 +62,7 @@ class Equitizer():
         work = np.arange(140 + 145 + 1)
         calc = partialmethod(self._calc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
-        return np.array(ret)
+        self.eq[turn] = np.array(ret)
     
     def gen(self, dumppath = "pre/res/eq.pickle", **kwargs):
         for i in range(20):
