@@ -85,12 +85,6 @@ class searcher():
                 vh, ch, cch = self.FCA(bet + self.BB, bet - self.BB, state, i)
                 vh = pr * vh + (1 - pr) * fEV
 
-                # DEBUG
-                if i > 160:
-                    print(f"raising with range {i}: (p = {pr})")
-                    print(f"equity = {vh}, BB action: ") 
-                    print(ch, cch)
-
                 if vh < v:
                     v, a, c, cc = vh, i, ch, cch
 
