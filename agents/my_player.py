@@ -22,7 +22,7 @@ class MyPlayer(BasePokerPlayer):
 
                 # switch c[hand] : F, C, A 
                 myh = self.SS.h2h2i(self.cards)
-                print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
+                # print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
                 if c[myh] == 2: return self.A()
                 else: return self.C() if c[myh] == 1 else self.F()
             else:
@@ -31,7 +31,7 @@ class MyPlayer(BasePokerPlayer):
 
                 # if hand <= a : A else F
                 myh = self.SS.h2h2i(self.cards)
-                print(f"[DEBUG] SB: myh = {myh}, a = {a}")
+                # print(f"[DEBUG] SB: myh = {myh}, a = {a}")
                 return self.A() if myh <= a else self.F()
         else:
             return self.CF() # temp
@@ -41,17 +41,17 @@ class MyPlayer(BasePokerPlayer):
         return self.C() if call else self.F()
 
     def C(self):
-        print("CALL")
+        # print("CALL")
         x = self.valids[1]
         return x["action"], x["amount"]
 
     def F(self):
-        print("FOLD")
+        # print("FOLD")
         x = self.valids[0]
         return x["action"], x["amount"]
 
     def A(self):
-        print(f"ALLIN")
+        # print(f"ALLIN")
         if len(self.valids) == 2 or self.valids[2]["amount"]["max"] == -1: return self.C()
         x = self.valids[2]
         return x["action"], x["amount"]["max"]
@@ -60,7 +60,7 @@ class MyPlayer(BasePokerPlayer):
         pass
 
     def receive_round_start_message(self, round_count, hole_card, seats):
-        print(hole_card)
+        # print(hole_card)
         self.cards = [Card.from_str(c) for c in hole_card]
         self.isBB = seats[0]["uuid"] == self.uuid if self.isBB is None else not self.isBB
         self.turn = 20 - round_count
