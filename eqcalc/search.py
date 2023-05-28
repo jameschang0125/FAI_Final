@@ -90,7 +90,7 @@ class searcher():
 
         # DEBUG
         # print(cc)
-        return v, a, c, cc if verbose else v, a, c
+        return (v, a, c, cc) if verbose else (v, a, c)
 
     def FCA(self, pot, bet, state, oppr, iter = 20):
         '''
