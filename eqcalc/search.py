@@ -61,7 +61,7 @@ class searcher():
 
         # PRE
         fEV = state.wr(self.BB * 1.5)
-        print(f"fEV = {fEV}")
+        # (f"fEV = {fEV}")
 
         vac = []
         for i in range(0, self.nHands, 10):
@@ -89,7 +89,7 @@ class searcher():
                     v, a, c, cc = vh, i, ch, cch
 
         # DEBUG
-        print(cc)
+        # print(cc)
         return v, a, c
 
     def FCA(self, pot, bet, state, oppr, iter = 20):
