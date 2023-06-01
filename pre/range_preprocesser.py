@@ -51,7 +51,7 @@ class RangePreProcesser():
         print(wrtable[0].tolist())
         print([SS.h2s(h) for h in id2hand])
 
-    def avgrwr(self, cutoffs = [0.1, 0.2, 0.4, 0.7, 1], **kwargs):
+    def avgrwr(self, cutoffs = [0.1, 0.2, 0.37, 0.6, 1], **kwargs):
         ans = np.zeros(self.nHands)
         for c in cutoffs:
             ans += self.robustwr(cutoff = c, **kwargs)

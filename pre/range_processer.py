@@ -8,25 +8,26 @@ import numpy as np
 class RangeProcesser():
     nHands = 13 * 13
 
-    def __init__(self, 
+    def __init__(self, boot = True,
                 frepath = "pre/res/ifr.pickle",
                 h2ipath = "pre/res/h2i.pickle", 
                 i2hpath = "pre/res/i2h.pickle", 
                 wrtpath = "pre/res/idwr.pickle", **kwargs):
         
-        with open(frepath, 'rb') as f:
-            self.fq = pickle.load(f)
-        with open(h2ipath, 'rb') as f:
-            self.h2i = pickle.load(f)
-        with open(i2hpath, 'rb') as f:
-            self.i2h = pickle.load(f)
-        with open(wrtpath, 'rb') as f:
-            self.wr = pickle.load(f)
-        
-        self.fw = self.wr * self.fq
-        self.fwSum = self._2dsum(self.fw)
-        self.wrSum = self._2dsum(self.wr)
-        self.fqSum = self._2dsum(self.fq)
+        if boot:
+            with open(frepath, 'rb') as f:
+                self.fq = pickle.load(f)
+            with open(h2ipath, 'rb') as f:
+                self.h2i = pickle.load(f)
+            with open(i2hpath, 'rb') as f:
+                self.i2h = pickle.load(f)
+            with open(wrtpath, 'rb') as f:
+                self.wr = pickle.load(f)
+            
+            self.fw = self.wr * self.fq
+            self.fwSum = self._2dsum(self.fw)
+            self.wrSum = self._2dsum(self.wr)
+            self.fqSum = self._2dsum(self.fq)
 
     def _2dsum(self, x):
         n, m = x.shape
@@ -83,6 +84,18 @@ class RangeProcesser():
 
     def prob(self, i):
         return self._sumrect(self.fqSum, (i, i))
+
+    def rprob_h(self, i, h):
+        '''
+        compute rprob GIVEN my hand = h
+        '''
+        return self._sumrect(self.fqSum, (h, h), (0, i)) / self.prob(h)
+
+    def rprob_r(self, i, r):
+        '''
+        compute rprob GIVEN my range = r
+        '''
+        return self._sumrect(self.fqSum, (0, r), (0, i)) / self.rprob(r)
 
     def __rvr(self, i, j):
         '''

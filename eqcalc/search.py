@@ -114,7 +114,7 @@ class searcher():
         a, opprc, v = None, None, -1
         for i in range(self.nHands):
             pr, opprc2 = self.RP.rprob(i), self.Shoved(state, pot, i, r = oppr + 1)
-            opppr = self.RP.rprob(opprc2) / self.RP.rprob(oppr)
+            opppr = self.RP.rprob_r(opprc2, i) / self.RP.rprob_r(oppr, i)
             vh = (1 - pr) * fEV + \
                 pr * (opppr * self.RP.rvr(i, opprc2) + (1 - opppr) * state.wr(pot + bet))
             if vh > v:
@@ -127,7 +127,7 @@ class searcher():
             for i in range(self.nHands):
                 cpr = self.RP.hvrEq(i, oppr) * self.pen
                 cEV = cpr * state.wr(pot) + (1 - cpr) * state.wr(-bet)
-                apr = self.RP.rprob(opprc2) / self.RP.rprob(oppr)
+                apr = self.RP.rprob_h(opprc2, i) / self.RP.rprob_h(oppr, i)
                 aEV = apr * self.RP.hvr(i, opprc2) + (1 - apr) * state.wr(pot)
                 best = max(fEV, cEV, aEV)
                 if fEV == best:

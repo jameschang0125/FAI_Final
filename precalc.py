@@ -10,9 +10,9 @@ from pre.equireader import Equireader as EQ
 # print(WR().wrTable[12][12]) # AA vs others
 
 # RPP().gen()
-# testrs()
+testrs()
 
-EZ().gen()
+# EZ().gen()
 #eq = EQ()
 #for i in range(850, 1150, 10):
 #    print(f"wr({i}): {eq.wr(18, i)}")
