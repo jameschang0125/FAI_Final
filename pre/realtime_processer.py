@@ -25,6 +25,7 @@ class RealtimeProcesser(RangeProcesser):
         if BBincl and BBincl not in BBr: BBr[-1] = BBincl
         if SBincl and SBincl not in SBr: SBr[-1] = SBincl
 
+        self.BBr, self.SBr = BBr, SBr
         wrt = self.gen(BBr, SBr, possibles)
         fqt = self.genf(BBr, SBr)
         self.cvt(wrt, fqt)
@@ -34,30 +35,30 @@ class RealtimeProcesser(RangeProcesser):
         self.fqSum = self._2dsum(self.fq)
 
         # DEBUG
-        print(self.fw)
-        print(wrt)
+        # print(self.fw)
+        # print(wrt)
 
-    def _sumrect(self, x, i, j = None):
-        '''
-        boundary: BOTH INCLUDED
-        '''
-        if j is None: j = (0, self.nHands(BB = False) - 1)
+    def i2h(self, i, BB = True):
+        return self.BBr[self.BB_i2h[i]] if BB else self.SBr[self.SB_i2h[i]]
+    
+    def is2h(self, i, BB = True):
+        return [self.i2h(j, BB) for j in i]
 
-        i1, i2 = i
-        j1, j2 = j
-        i1, j1 = i1 - 1, j1 - 1
-        ans = x[i2][j2]
-        if i1 >= 0: ans -= x[i1][j2]
-        if j1 >= 0: ans -= x[i2][j1]
-        if i1 >= 0 and j1 >= 0: ans += x[i1][j1]
+    def h2i(self, h, BB = True):
+        return self.BB2i[h] if BB else self.SB2i[h]
 
-        return ans
-
+    def h2s(self, x):
+        return self.c2s(x[0]) + self.c2s(x[1])
+        
+    def c2s(self, c):
+        s, r = c
+        return "23456789TJQKA"[r - 2] + "cdhs"[s]
 
     def cvt(self, wrt, fqt):
         '''
         copy from range preprocesser
         order hand by wr
+        # TODO: not sort by overall wr
         '''
         fw = wrt * fqt
         m, n = fw.shape
@@ -68,6 +69,9 @@ class RealtimeProcesser(RangeProcesser):
         self.BB_h2i, self.SB_h2i = np.zeros(m, dtype = 'int16'), np.zeros(n, dtype = 'int16')
         self.BB_h2i[self.BB_i2h] = np.arange(m)
         self.SB_h2i[self.SB_i2h] = np.arange(n)
+
+        self.BB2i = {b : self.BB_h2i[i] for i, b in enumerate(self.BBr)}
+        self.SB2i = {b : self.SB_h2i[i] for i, b in enumerate(self.SBr)}
 
         wrt2, fqt2 = np.zeros((m, n)), np.zeros((m, n))
         for i in range(m):

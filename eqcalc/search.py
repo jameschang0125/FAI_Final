@@ -28,6 +28,10 @@ class searcher():
             s = 'o'
         return "23456789TJQKA"[x] + "23456789TJQKA"[y] + s
 
+    @classmethod
+    def hs2s(self, hs):
+        return [self.h2s(h) for h in hs]
+
     def i2s(self, i):
         '''
         id to string
@@ -46,10 +50,17 @@ class searcher():
     
     def h2h(self, h):
         x, y = h
+        m, n = x[1] - 2, y[1] - 2
+        m, n = max(m, n), min(m, n)
+        if x[0] == y[0]: m, n = n, m
+        return m + n * 13
+        '''
+        x, y = h
         m, n = x.rank - 2, y.rank - 2
         m, n = max(m, n), min(m, n)
         if x.suit == y.suit: m, n = n, m
         return m + n * 13
+        '''
     
     def h2h2i(self, h):
         return self.h2i(self.h2h(h))
