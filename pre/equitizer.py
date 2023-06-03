@@ -88,7 +88,7 @@ class Equitizer():
         calc = partialmethod(self._AoFcalc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
 
-        print(ret[0])
+        # print(ret[0])
 
         self.eq[turn] = np.array([r[0] for r in ret])
         self.BBr[turn] = np.array([r[1] for r in ret])
@@ -117,5 +117,5 @@ class Equitizer():
         # DEBUG
         s = self.size - 10
         for i in range(20):
-            print(f"turn{i} :: \neq: {self.eq[i]}\nBBr:{BBr[i][s]}\nSBr:{SBr[i][s]}")
+            print(f"turn{i} :: \neq: {self.eq[i]}\nBBr:{self.BBr[i][s]}\nSBr:{self.SBr[i][s]}")
         

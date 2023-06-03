@@ -15,7 +15,69 @@ class researcher():
         self.slowp = postslowp
         self.award = postCCaward # award C-C line
 
-    def CR(self, pot, rsize, state, pen = 0):
+    def R_AoF(self, pot, rsize, state, iter = 31):
+        '''
+        similar to search.AoF
+        '''
+        v, c, Rc, Rcc, Cc, Ccc = self.CR(pot, rsize, state, verbose = True)
+
+        # DEBUG
+        np.set_printoptions(precision = 3, suppress = True)
+
+        m, n = self.RP.nHands(BB = True), self.RP.nHands(BB = False)
+        myr, myrc, oppr, opprc, opprc2 = np.zeros(m), np.zeros(m), np.zeros(n), np.zeros(n), np.zeros(n)
+        # myr   : C - A
+        # myrc  : R - A
+        # oppr  : R
+        # opprc : R - A - A
+        # opprc2: C - A - A
+
+        for i in range(m):
+            if i <= Rc: myr[i] = 1
+            if i <= Cc: myrc[i] = 1
+
+        for i in range(n):
+            if i <= c: 
+                oppr[i] = 1
+                if i <= Rcc: opprc[i] = 1
+            elif i <= Ccc: opprc2[i] = 1
+
+
+        lr, decay = 0.8, 0.865 # 0.8 * 0.865 ** 30 ~ 1%
+        for it in range(1, iter):
+            myr_2, myrc_2, oppr_2, opprc_2, opprc2_2 = self.R_AoF_iter(pot, rsize, state, myr, myrc, oppr, opprc, opprc2)
+            myr = myr_2 * (1 - lr) + myr * lr
+            myrc = myrc_2 * (1 - lr) + myrc * lr
+            oppr = oppr_2 * (1 - lr) + oppr * lr
+            opprc = opprc_2 * (1 - lr) + opprc * lr
+            opprc2 = opprc2_2 * (1 - lr) + opprc2 * lr
+        
+        return myr, myrc, oppr, opprc, opprc2
+
+    def R_AoF_iter(self, pot, rsize, state, myr, myrc, oppr, opprc, opprc2):
+        m, n = self.RP.nHands(BB = True), self.RP.nHands(BB = False)
+        fEV, sfEV, srfEV = state.wr(0), state.wr(pot), state.wr(pot + rsize)
+        
+        myr_2, myrc_2, oppr_2, opprc_2, opprc2_2 = np.zeros(m), np.zeros(m), np.zeros(n), np.zeros(n), np.zeros(n)
+
+        # SB TODO
+        for i in range(n):
+            rfEV = 
+            raEV = 
+            cfEV = 
+            caEV = 
+            # TODO
+            best = max(rfEV, raEV, cfEV, caEV)
+            if best == rfEV:
+                oppr_2[i] = 1
+            elif best == raEV:
+                oppr_2[i], opprc_2[i] = 1, 1
+            elif best == caEV:
+                oppr2_2[i] = 1
+
+        # BB TODO
+
+    def CR(self, pot, rsize, state, pen = 0, verbose = False):
         '''
             --- R --- F/A --- F/A
         ----
@@ -60,7 +122,7 @@ class researcher():
         print(f"EV when SB C         : {bestCEV}")
         '''
 
-        return v, c, Rc, Cc, Ccc
+        return (v, c, Rc, Rcc, Cc, Ccc) if verbose else (v, c, Rc, Cc, Ccc) 
     
     def R_MDF(self, pot, rsize, state):
         '''

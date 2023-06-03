@@ -76,7 +76,6 @@ class searcher():
         calculate almost exact Nash. (probably) need to be precomputed.
 
         O(NN * iter ~ 8.6M), about 12s 
-        in order to compute in real time (postflop sampled N ~ 50), 
         '''
         v, a, c = self.FR(1000, state)
 
