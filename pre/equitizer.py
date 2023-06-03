@@ -11,10 +11,13 @@ class Equitizer():
     '''
     size = 150
     offset = 850 # 1000 - size
+    nHands = 13 * 13
 
     def __init__(self):
         self.eq = np.zeros((20, self.size * 2 + 1)) # turn left, BB.chips (BEFORE paying BB) - 860
-    
+        self.BBr = np.zeros((20, self.size * 2 + 1, self.nHands))
+        self.SBr = np.zeros((20, self.size * 2 + 1, self.nHands))
+
     @classmethod
     def __thre(self, turn, isBB):
         x, y = turn // 2, (turn + 1) // 2
@@ -67,6 +70,7 @@ class Equitizer():
         ss = SS()
         state = State(self.offset + x - 10, True, turn - 1, self)
         v, myr, oppr = ss.AoF(state)
+        return v, myr, oppr
 
 
     def __gen(self, turn, workers = 70, **kwargs):
@@ -82,18 +86,33 @@ class Equitizer():
         work = np.arange(self.size * 2 + 1)
         calc = partialmethod(self._AoFcalc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
-        self.eq[turn] = np.array(ret)
+
+        self.eq[turn] = np.array([r[0] for r in ret])
+        self.BBr[turn] = np.array([r[1] for r in ret])
+        self.SBr[turn] = np.array([r[2] for r in ret])
     
-    def gen(self, dumppath = "pre/res/eq.pickle", **kwargs):
+    def gen(self, eqpath = "pre/res/AoFeq.pickle"
+                , BBpath = "pre/res/AoFBBr.pickle"
+                , SBpath = "pre/res/AoFSBr.pickle"
+                , **kwargs):
         for i in range(20):
             print(f"[PROGRESS] equitizer.__gen({i})")
             self.__gen(i, **kwargs)
 
-        if dumppath is not None:
-            with open(dumppath, 'wb') as f:
+        if eqpath is not None:
+            with open(eqpath, 'wb') as f:
                 pickle.dump(self.eq, f)
 
+        if BBpath is not None:
+            with open(BBpath, 'wb') as f:
+                pickle.dump(self.BBr, f)
+
+        if SBpath is not None:
+            with open(SBpath, 'wb') as f:
+                pickle.dump(self.SBr, f)
+
         # DEBUG
+        s = self.size - 10
         for i in range(20):
-            print(i, ":", self.eq[i], "\n")
+            print(f"turn{i} :: \neq: {self.eq[i]}\nBBr:{BBr[i][s]}\nSBr:{SBr[i][s]}")
         
