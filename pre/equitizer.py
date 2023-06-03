@@ -65,7 +65,8 @@ class Equitizer():
 
     def _AoFcalc(self, turn, x):
         y = self.__win(turn, x)
-        if y is not None: return y
+        if y == 0: return y, np.ones(self.nHands), np.zeros(self.nHands)
+        if y == 1: return y, np.zeros(self.nHands), np.ones(self.nHands)
 
         ss = SS()
         state = State(self.offset + x - 10, True, turn - 1, self)
@@ -86,6 +87,8 @@ class Equitizer():
         work = np.arange(self.size * 2 + 1)
         calc = partialmethod(self._AoFcalc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
+
+        print(ret[0])
 
         self.eq[turn] = np.array([r[0] for r in ret])
         self.BBr[turn] = np.array([r[1] for r in ret])
