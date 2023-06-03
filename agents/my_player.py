@@ -3,43 +3,48 @@ from eqcalc.search import searcher as SS
 from eqcalc.state import State
 from game.engine.card import Card
 from pre.equireader import Equireader as EQ
-
+from eqcalc.presearch import presearcher as pre
+from eqcalc.postsearch import postsearcher as post
 
 class MyPlayer(BasePokerPlayer):
     def __init__(self, debug = False, showhand = False):
-        self.SS = SS()
+        self.pre = pre(debug = debug)
+        self.post = post(debug = debug)
         self.isBB = None
-        self.EQ = EQ()
         self.debug = debug
         self.showhand = showhand
 
+        self.s2suit = {s: i for i, s in enumerate(list("CDHS"))}
+        self.s2rank = {s: i + 2 for i, s in enumerate(list("23456789TJQKA"))}
+
     def declare_action(self, valid_actions, hole_card, round_state):
         self.valids = valid_actions
-        isFirstAct, self.isFirstAct = self.isFirstAct, False
+        
+        if self.allined: return self.A()
+
         if round_state['street'] == 'preflop':
-            if not isFirstAct:
-                return self.A()
-            # if self.isWin():
-            #    return self.F()
             if self.isBB:
-                SBraise = round_state['action_histories']['preflop'][2]['amount']
-                v, a, c = self.SS.FR(SBraise, State(self.my, turn = self.turn - 1, equitizer = self.EQ))
-
-                # switch c[hand] : F, C, A 
-                myh = self.SS.h2h2i(self.cards)
-                if self.debug: print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
-                if c[myh] == 2: return self.A()
-                else: return self.C() if c[myh] == 1 else self.F()
+                rsize = round_state['action_histories']['preflop'][2]['amount']
+                act, self.myr, self.oppr = self.pre.calc(self.my, self.turn, rsize, self.cards)
+                # if self.debug: print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
+                if act == 2: return self.A()
+                else: return self.C() if act == 1 else self.F()
             else:
-                SBraise = 1000
-                v, a, c = self.SS.FR(SBraise, State(self.opp, turn = self.turn - 1, equitizer = self.EQ))
+                rsize = 1000
+                act, self.oppr, self.myr = self.pre.calc(self.my, self.turn, rsize, self.cards, BB = False)
+                return self.A() if act else self.F()
+        else: # POSTFLOP BB
+            street = round_state['street']
+            rsize, SB_C = round_state['action_histories'][street][0]['amount'], False
+            if rsize == 0: 
+                rsize, SB_C = 1000, True # A
+            act_C, act_R, self.myr, self.oppr = self.post.calc(self.my, self.turn, self.pot, rsize, \
+                                                      self.myr, self.cards, self.oppr, self.comm)
+            act = self.realize(act_C if SB_C else act_R)
+            return self.A() if act == 1 else self.CF()
 
-                # if hand <= a : A else F
-                myh = self.SS.h2h2i(self.cards)
-                if self.debug: print(f"[DEBUG] SB: myh = {myh}, a = {a}")
-                return self.A() if myh <= a else self.F()
-        else:
-            return self.CF() # temp
+    def realize(self, act):
+        return 1 if act > 0.5 else 0
 
     def CF(self):
         call = self.valids[1]["amount"] == 0
@@ -56,23 +61,26 @@ class MyPlayer(BasePokerPlayer):
         return x["action"], x["amount"]
 
     def A(self):
+        self.allined = True
         if self.debug: print(f"ALLIN")
         if len(self.valids) == 2 or self.valids[2]["amount"]["max"] == -1: return self.C()
         x = self.valids[2]
         return x["action"], x["amount"]["max"]
 
     def receive_game_start_message(self, game_info):
-        pass
+        self.isBB = None
+
+    def s2c(self, s):
+        return self.s2suit[s[0]], self.s2rank[s[1]]
 
     def receive_round_start_message(self, round_count, hole_card, seats):
         if self.showhand: print(hole_card)
-        self.cards = [Card.from_str(c) for c in hole_card]
-        self.isBB = seats[0]["uuid"] == self.uuid if self.isBB is None else not self.isBB
-        self.turn = 20 - round_count
+        self.cards = tuple(sorted((self.s2c(c) for c in hole_card)))
+        self.isBB = seats[0]["uuid"] == self.uuid if (self.isBB is None) else (not self.isBB)
+        self.turn = 19 - round_count
+        self.allined = False
 
     def receive_street_start_message(self, street, round_state):
-        self.isFirstAct = True
-
         rs = round_state["seats"]
         for pos in range(len(rs)):
             s = rs[pos]
@@ -81,6 +89,12 @@ class MyPlayer(BasePokerPlayer):
                 self.my = s["stack"]
             else:
                 self.opp = s["stack"]
+        
+        rs = round_state["pot"]
+        self.pot = rs["main"]["amount"]
+
+        rs = round_state["community_card"]
+        self.comm = [self.s2c(c) for c in rs]
 
     def receive_game_update_message(self, action, round_state):
         pass
@@ -92,8 +106,11 @@ class MyPlayer(BasePokerPlayer):
 def quiet_ai():
     return MyPlayer()
 
+def show_ai():
+    return MyPlayer(showhand = True)
+
 def test_ai():
-    return MyPlayer(debug = True, showhand = False)
+    return MyPlayer(debug = True, showhand = True)
 
 def setup_ai():
     return MyPlayer()

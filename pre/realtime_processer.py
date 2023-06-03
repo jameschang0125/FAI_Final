@@ -25,7 +25,7 @@ class RealtimeProcesser(RangeProcesser):
         if BBincl and BBincl not in BBr: BBr[-1] = BBincl
         if SBincl and SBincl not in SBr: SBr[-1] = SBincl
 
-        self.BBr, self.SBr = BBr, SBr
+        self.BBr, self.SBr = [tuple(t) for t in BBr], [tuple(t) for t in SBr]
         wrt = self.gen(BBr, SBr, possibles)
         fqt = self.genf(BBr, SBr)
         self.cvt(wrt, fqt)
@@ -47,9 +47,15 @@ class RealtimeProcesser(RangeProcesser):
     def h2i(self, h, BB = True):
         return self.BB2i[h] if BB else self.SB2i[h]
 
+    @classmethod
+    def hs2s(self, hs):
+        return [self.h2s(h) for h in hs]
+
+    @classmethod
     def h2s(self, x):
         return self.c2s(x[0]) + self.c2s(x[1])
         
+    @classmethod
     def c2s(self, c):
         s, r = c
         return "23456789TJQKA"[r - 2] + "cdhs"[s]
@@ -99,7 +105,7 @@ class RealtimeProcesser(RangeProcesser):
         for i in range(m):
             for j in range(n):
                 bb, sb = BBr[i], SBr[j]
-                ans[i][j] = 1 if len(set(bb + sb)) == 4 else 0
+                ans[i][j] = 1 if len(set(list(bb) + list(sb))) == 4 else 0
         return ans
     
     @classmethod
@@ -127,7 +133,7 @@ class RealtimeProcesser(RangeProcesser):
         '''
         ret: [strengths], [strengths]
         '''
-        return [self.eval(h, comm) for h in BBr], [self.eval(h, comm) for h in SBr]
+        return [self.eval(list(h), comm) for h in BBr], [self.eval(h, comm) for h in SBr]
     
     @classmethod
     def eval(self, x, y):

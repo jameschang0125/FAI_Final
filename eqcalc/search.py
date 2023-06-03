@@ -12,7 +12,7 @@ class searcher():
     BB = 10 # SB
     nHands = 13 * 13
 
-    def __init__(self, pen = 0.9):
+    def __init__(self, pen = 0.95):
         self.RP = RP()
         self.pen = pen
 
@@ -37,6 +37,12 @@ class searcher():
         id to string
         '''
         return self.h2s(self.i2h(i))
+
+    def is2s(self, i):
+        '''
+        id to string
+        '''
+        return [self.i2s(j) for j in i]
     
     def r2s(self, r):
         sols = np.where(r == 2)[0]
@@ -132,9 +138,12 @@ class searcher():
                 a, opprc, v = i, opprc2, vh
         
         # STEP 2-5
+
+        tmp = np.zeros((2, self.nHands))
         for it in range(1, iter):
             myr2 = np.array([0 for i in range(self.nHands)]) # 0, 1, 2 = F, C, A
             vh, opprc2 = 0, int(opprc)
+
             for i in range(self.nHands):
                 cpr = self.RP.hvrEq(i, oppr) * self.pen
                 cEV = cpr * state.wr(pot) + (1 - cpr) * state.wr(-bet)
@@ -146,11 +155,27 @@ class searcher():
                 else:
                     myr2[i] = 2 if aEV == best else 1
                 vh += self.RP.prob(i) * best
+                
+                # DEBUG
+                # if oppr == self.nHands - 1 and it == iter - 1:
+                #    print(f"with hand {self.i2s(i)}, cEV = {cEV}, aEV = {aEV}, fEV = {fEV}")
 
+            tmp[0] += myr2 == 1
+            tmp[1] += myr2 == 2
+
+            # DEBUG
+            '''
+            if oppr == self.nHands - 1:
+                tmp[0] += myr2 == 1
+                tmp[1] += myr2 == 2
+                print(tmp / it)
+                if it == iter - 1:
+                    print(f"opponent calling shove with {self.is2s(range(opprc2 + 1))}")
+            '''
             opprc3 = self.Shovediscrete(state, pot, myr2 == 2, r = oppr + 1)
             opprc, v = (opprc * it + opprc3) / (it + 1), vh
 
-        return v, myr2, opprc
+        return v, tmp / (iter - 1), opprc # v, myr2, opprc
 
     def Shoved(self, state, pot, oppr, l = 0, r = nHands):
         '''

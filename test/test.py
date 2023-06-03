@@ -2,6 +2,9 @@ from game.engine.hand_evaluator import HandEvaluator as HE
 from game.engine.card import Card
 
 def test():
+    
+
+    '''
     p1, p2 = ["SA", "D6"], ["S2", "D7"]
     comm = ["C6", "D8", "D9", "DJ", "DA"]
 
@@ -11,4 +14,5 @@ def test():
 
     print(f"{HE.eval_hand(p1, comm):b}")
     print(f"{HE.eval_hand(p2, comm):b}")
+    '''
 

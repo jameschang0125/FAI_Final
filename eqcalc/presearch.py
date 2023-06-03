@@ -3,15 +3,19 @@ import numpy as np
 from pre.equireader import Equireader as EQ
 from random import random
 from itertools import product
+from eqcalc.state import State
+
+
 
 class presearcher():
-    def __init__(self, keeprate = 0.5, drawrate = 0.2):
+    def __init__(self, keeprate = 0.5, drawrate = 0.1, debug = True, **kwargs):
         self.equitizer = EQ()
         self.ss = SS()
-        self.keeprate = keeprate
+        self.keeprate = keeprate # unused
         self.drawrate = drawrate
+        self.debug = debug
     
-    def calc(self, BBchip, turn, rsize, myh):
+    def calc(self, BBchip, turn, rsize, myh, BB = True):
         '''
         return: action, myr(R/C), oppr(R/C)
         convert preflop ranges to postflop
@@ -19,7 +23,8 @@ class presearcher():
         cur = State(BBchip, turn = turn, equitizer = self.equitizer)
         v, a, c = self.ss.FR(rsize, cur)
         myid = self.ss.h2h2i(myh)
-        act = c[myid]
+        c, cold = self.actall(c), c
+        act = c[myid] if BB else int(myid <= self.modifier(a, turn)) # int(myid <= a)
 
         myhs = []
         for i, x in enumerate(c):
@@ -27,31 +32,72 @@ class presearcher():
         oppr = self.r2hs(a)
         myr = self.hs2hs(myhs)
 
+        allset = set(self.r2hs(self.ss.nHands - 1))
+        myrset, opprset = set(myr), set(oppr)
+        for i in allset:
+            if i not in myrset and random() < self.drawrate:
+                myr.append(i)
+        for i in allset:
+            if i not in opprset and random() < self.drawrate:
+                oppr.append(i)
+
+        # DEBUG
+        if self.debug:
+            if BB:
+                tmp = []
+                for i in range(self.ss.nHands):
+                    if c[i] == 2: tmp.append(i)
+                print(f"[pre calc] BB shoving {self.ss.is2s(tmp)}")
+            else:
+                print(f"[pre calc] SB shoving {self.ss.is2s(range(a + 1))}")
+
         return act, myr, oppr
     
+    def modifier(self, x, turn, rate = 0.8):
+        rate = ((20 - turn) + rate * (turn - 10)) / 10 if turn < 10 else 1
+        if x >= self.ss.nHands - 10: return x
+        return int(x * rate)
+
+    def actall(self, c):
+        return [self.act(c[0][i], c[1][i]) for i in range(self.ss.nHands)]
+
+    @classmethod
+    def act(self, c, a):
+        '''
+        given c, a prob suggested, output the action
+        '''
+        if c + a < 0.4:
+            return 0
+        if a > 0.6:
+            return 2
+        return 1
+
     def r2hs(self, r):
         ans = []
         for i in range(r):
             ans += self.i2h(i)
-        return ans
+        return [tuple(t) for t in ans]
     
     def hs2hs(self, hs):
         ans = []
         for i in hs:
             ans += self.i2h(i)
-        return ans
+        return [tuple(t) for t in ans]
     
     def i2h(self, i):
         h = self.ss.i2h(i)
         x, y = h % 13 + 2, h // 13 + 2
         if x == y:
-            return [sorted([(i, x), (j, x)]) for i in range(j) for j in range(4)]
+            ans = []
+            for j in range(4):
+                for k in range(j):
+                    ans.append(sorted(((i, x), (j, x))))
         if x > y: # xys
-            return [sorted([(i, x), (i, y)]) for i in range(4)]
+            return [sorted(((i, x), (i, y))) for i in range(4)]
 
         ans = [] # xyo
         for i, j in product(range(4), range(4)):
-            if i != j: ans.append(sorted([(i, x), (j, y)]))
+            if i != j: ans.append(sorted(((i, x), (j, y))))
         return ans
 
 
