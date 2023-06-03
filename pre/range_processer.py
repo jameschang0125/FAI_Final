@@ -102,6 +102,10 @@ class RangeProcesser():
     def prob(self, i, BB = True):
         return self._sumrect(self.fqSum, (i, i)) if BB else self._sumrect(self.fqSum, j = (i, i))
 
+    def combprob(self, i, j):
+        return self.fq[i][j]
+
+
     def rprob_h(self, i, h, BB = True):
         '''
         compute rprob GIVEN my hand = h

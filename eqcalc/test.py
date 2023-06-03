@@ -8,6 +8,24 @@ from game.engine.card import Card
 from itertools import product
 from tqdm import tqdm
 
+from eqcalc.presearch import presearcher as pre
+
+def testAoF():
+    ss = SS()
+    eq = EQ()
+    cur = State(1000, turn = 2, equitizer = eq)
+    ret = ss.AoF(cur)
+    print(ret)
+
+
+def testpre():
+    pres = pre()
+    # calc(self, BBchip, turn, rsize, myh, BB = True)
+    myh = ((1, 14), (2, 14))
+    for stack in [900, 950, 1000, 1050, 1100]:
+        print(f"\nstack = {stack}")
+        pres.calc(stack, 19, 1000, myh)
+
 def testrs():
     ss = SS()
     '''

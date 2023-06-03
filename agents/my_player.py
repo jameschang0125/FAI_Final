@@ -7,9 +7,27 @@ from eqcalc.presearch import presearcher as pre
 from eqcalc.postsearch import postsearcher as post
 
 class MyPlayer(BasePokerPlayer):
-    def __init__(self, debug = False, showhand = False):
-        self.pre = pre(debug = debug)
-        self.post = post(debug = debug)
+    def __init__(self, debug = False, showhand = False, **kwargs):
+        '''
+        kwargs :
+        - pre
+            - prekeeprate   : (default: 0.5)
+            - predrawrate   : (default: 0.1)
+            - preactfunc    : (default: None)
+            - prepen        : used in searcher, penalize C - C (default: 0.95)
+        - post
+            - postkeeprate  : (default: 0.5)
+            - postdrawrate  : (default: 0.2)
+            - postactfunc   : (default: None)
+            - postnSearch   : (default: 3)
+            - postSBaggr    : (default: )
+            - postBBaggr    : (default: )
+            - postslowp     : (default: )
+            - postCCaward   : (default: )
+        '''
+
+        self.pre = pre(debug = debug, **kwargs)
+        self.post = post(debug = debug, **kwargs)
         self.isBB = None
         self.debug = debug
         self.showhand = showhand
@@ -40,11 +58,8 @@ class MyPlayer(BasePokerPlayer):
                 rsize, SB_C = 1000, True # A
             act_C, act_R, self.myr, self.oppr = self.post.calc(self.my, self.turn, self.pot, rsize, \
                                                       self.myr, self.cards, self.oppr, self.comm)
-            act = self.realize(act_C if SB_C else act_R)
+            act = act_C if SB_C else act_R
             return self.A() if act == 1 else self.CF()
-
-    def realize(self, act):
-        return 1 if act > 0.5 else 0
 
     def CF(self):
         call = self.valids[1]["amount"] == 0
@@ -110,7 +125,7 @@ def show_ai():
     return MyPlayer(showhand = True)
 
 def test_ai():
-    return MyPlayer(debug = True, showhand = True)
+    return MyPlayer(debug = True, showhand = False)
 
 def setup_ai():
     return MyPlayer()

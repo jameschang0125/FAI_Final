@@ -8,8 +8,12 @@ class researcher():
     Suppose we have the range of BB and SB is given.
     TODO: division by 0 
     '''
-    def __init__(self, rp):
+    def __init__(self, rp, postSBaggr = 0.9, postBBaggr = 1, postslowp = 0.4, postCCaward = 1, **kwargs):
         self.RP = rp
+        self.SBaggr = postSBaggr
+        self.BBaggr = postBBaggr
+        self.slowp = postslowp
+        self.award = postCCaward # award C-C line
 
     def CR(self, pot, rsize, state, pen = 0):
         '''
@@ -58,10 +62,11 @@ class researcher():
 
         return v, c, Rc, Cc, Ccc
     
-    def R_MDF(self, pot, rsize, state, aggr = 0.9):
+    def R_MDF(self, pot, rsize, state):
         '''
         We will compute the MDF such that the bottom range of R cannot gain freely
         '''
+        aggr = self.SBaggr
         bot = self.RP.nHands(BB = False) - 1
         for i in range(self.RP.nHands(BB = True)):
             mypr = self.RP.rprob(i, BB = True) # not acc. but nvm
@@ -71,7 +76,7 @@ class researcher():
             SB_bot_cEV = state.wr(pot) * eq + state.wr(0) * (1 - eq)
 
             if SB_bot_cEV < SB_bot_rEV: # call is better, since SB minimizes
-                return int(i * aggr)
+                return min(int(i * aggr), self.RP.nHands(BB = True))
 
         return 0 # in this case, SB's range is too good
 
@@ -99,11 +104,12 @@ class researcher():
                 v, c, cc = vh, i, opprc
         return v, c, cc
 
-    def C_A_MDF(self, pot, state, oppr, slowp, aggr = 1):
+    def C_A_MDF(self, pot, state, oppr):
         '''
         We will compute the MDF such that the bottom range of BB cannot gain freely
         oppr : actually myr
         '''
+        aggr, slowp = self.BBaggr, self.slowp
         bot = self.RP.nHands(BB = True) - 1
         for i in range(self.RP.nHands(BB = False)):
             mypr = self.RP.rprob(i, BB = False) # not acc. but nvm
@@ -128,10 +134,11 @@ class researcher():
 
         return 0 # in this case, BB's range is too good
 
-    def C_CA(self, pot, state, oppr, slowp = 0.4, award = 1):
+    def C_CA(self, pot, state, oppr):
         v, c, cc = -1, None, None
 
-        mdf = self.C_A_MDF(pot, state, oppr, slowp)
+        slowp, award = self.slowp, self.award
+        mdf = self.C_A_MDF(pot, state, oppr)
 
         for i in range(self.RP.nHands(BB = True)):
             pr = self.RP.rprob(i, BB = True)

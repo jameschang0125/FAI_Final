@@ -1,6 +1,6 @@
 from pre.winrater import winRater as WR
 from pre.range_preprocesser import RangePreProcesser as RPP
-from eqcalc.test import testrs
+from eqcalc.test import testrs, testAoF
 from pre.equitizer import Equitizer as EZ
 from pre.equireader import Equireader as EQ
 
@@ -10,9 +10,11 @@ from pre.equireader import Equireader as EQ
 # print(WR().wrTable[12][12]) # AA vs others
 
 # RPP().gen()
-testrs()
+# testrs()
 
-# EZ().gen()
+# testAoF()
+
+EZ().gen()
 #eq = EQ()
 #for i in range(850, 1150, 10):
 #    print(f"wr({i}): {eq.wr(18, i)}")

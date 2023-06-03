@@ -12,9 +12,9 @@ class searcher():
     BB = 10 # SB
     nHands = 13 * 13
 
-    def __init__(self, pen = 0.95):
+    def __init__(self, prepen = 0.95, **kwargs):
         self.RP = RP()
-        self.pen = pen
+        self.pen = prepen
 
     @classmethod
     def h2s(self, h):
@@ -70,6 +70,83 @@ class searcher():
     
     def h2h2i(self, h):
         return self.h2i(self.h2h(h))
+
+    def AoF(self, state, iter = 301):
+        '''
+        calculate almost exact Nash. (probably) need to be precomputed.
+
+        O(NN * iter ~ 8.6M), about 12s 
+        in order to compute in real time (postflop sampled N ~ 50), 
+        '''
+        v, a, c = self.FR(1000, state)
+
+        # DEBUG
+        np.set_printoptions(precision = 3, suppress = True)
+
+        myr, oppr = np.zeros((self.nHands)), np.zeros((self.nHands))
+        for i in range(self.nHands):
+            myr[i] = c[1][i]
+            oppr[i] = int(i <= a)
+        
+        # print(myr)
+        # print(oppr)
+
+        lr, decay = 0.8, 0.97 # 0.8 * 0.97 ** 200 ~ 0.5%
+        for it in range(1, iter):
+            '''
+            if it % 40 == 0:
+                print(f"\n---- iter {it} ----")
+                print(myr)
+                print(oppr)
+            '''
+
+            myr2, oppr2 = self.AoF_iter(state, myr, oppr)
+            myr = myr2 * (1 - lr) + myr * lr
+            oppr = oppr2 * (1 - lr) + oppr * lr
+        
+        # calculate eq
+        val = 0
+        fEV, sfEV = state.wr(0), state.wr(15)
+        for i in range(self.nHands):
+            for j in range(self.nHands):
+                tmp = (1 - oppr[j]) * sfEV 
+                tmp += oppr[j] * (myr[i] * self.RP.hvh(i, j) + (1 - myr[j]) * fEV)
+                val += tmp * self.RP.combprob(i, j)
+
+        return val, myr, oppr
+
+    def AoF_iter(self, state, myr, oppr):
+        # SB BR
+        fEV, sfEV = state.wr(0), state.wr(15)
+        oppr2 = np.zeros(self.nHands)
+        for i in range(self.nHands):
+            aEV = 0
+            for j in range(self.nHands): # opp
+                pr = self.RP.combprob(j, i)
+                if pr == 0: continue
+                tmp = myr[j] * self.RP.hvh(j, i) + (1 - myr[j]) * fEV
+                aEV += tmp * pr
+            fEV2 = sfEV * self.RP.prob(j) 
+            oppr2[i] = 1 if aEV < fEV2 else 0
+
+        # BB BR
+        myr2 = np.zeros(self.nHands)
+        for i in range(self.nHands):
+            aEV, tprob = 0, 0
+            for j in range(self.nHands): # opp
+                pr = self.RP.combprob(i, j)
+                if pr == 0: continue
+                tprob += pr * oppr[j]
+                aEV += pr * oppr[j] * self.RP.hvh(i, j)
+            fEV2 = fEV * tprob
+            myr2[i] = 1 if aEV > fEV2 else 0
+        
+        return myr2, oppr2
+
+
+            
+
+
 
     def FR(self, bet, state, verbose = False):
         '''

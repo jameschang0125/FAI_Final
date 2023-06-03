@@ -5,15 +5,17 @@ from random import random
 from itertools import product
 from eqcalc.state import State
 
-
-
 class presearcher():
-    def __init__(self, keeprate = 0.5, drawrate = 0.1, debug = True, **kwargs):
+    def __init__(self, prekeeprate = 0.5, predrawrate = 0.1, debug = True, preactfunc = None, **kwargs):
         self.equitizer = EQ()
-        self.ss = SS()
-        self.keeprate = keeprate # unused
-        self.drawrate = drawrate
+        self.ss = SS(**kwargs)
+        self.keeprate = prekeeprate # unused
+        self.drawrate = predrawrate
         self.debug = debug
+        if preactfunc is None:
+            self.actfunc = self.act
+        else:
+            self.actfunc = preactfunc
     
     def calc(self, BBchip, turn, rsize, myh, BB = True):
         '''
@@ -43,13 +45,13 @@ class presearcher():
 
         # DEBUG
         if self.debug:
-            if BB:
-                tmp = []
-                for i in range(self.ss.nHands):
-                    if c[i] == 2: tmp.append(i)
-                print(f"[pre calc] BB shoving {self.ss.is2s(tmp)}")
-            else:
-                print(f"[pre calc] SB shoving {self.ss.is2s(range(a + 1))}")
+            #if BB:
+            tmp = []
+            for i in range(self.ss.nHands):
+                if c[i] == 2: tmp.append(i)
+            print(f"[pre calc] BB shoving {self.ss.is2s(tmp)}")
+            #else:
+            print(f"[pre calc] SB shoving {self.ss.is2s(range(a + 1))}")
 
         return act, myr, oppr
     
@@ -59,7 +61,7 @@ class presearcher():
         return int(x * rate)
 
     def actall(self, c):
-        return [self.act(c[0][i], c[1][i]) for i in range(self.ss.nHands)]
+        return [self.actfunc(c[0][i], c[1][i]) for i in range(self.ss.nHands)]
 
     @classmethod
     def act(self, c, a):

@@ -60,6 +60,15 @@ class Equitizer():
 
         return v
 
+    def _AoFcalc(self, turn, x):
+        y = self.__win(turn, x)
+        if y is not None: return y
+
+        ss = SS()
+        state = State(self.offset + x - 10, True, turn - 1, self)
+        v, myr, oppr = ss.AoF(state)
+
+
     def __gen(self, turn, workers = 70, **kwargs):
         '''
         Suppose (turn - 1) is calculated
@@ -71,7 +80,7 @@ class Equitizer():
             return
 
         work = np.arange(self.size * 2 + 1)
-        calc = partialmethod(self._calc, turn).__get__(self)
+        calc = partialmethod(self._AoFcalc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
         self.eq[turn] = np.array(ret)
     
