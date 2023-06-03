@@ -62,10 +62,7 @@ class researcher():
 
         # SB TODO
         for i in range(n):
-            rfEV = 
-            raEV = 
-            cfEV = 
-            caEV = 
+            rfEV, raEV, cfEV, caEV = 0, 0, 0, 0
             # TODO
             best = max(rfEV, raEV, cfEV, caEV)
             if best == rfEV:
