@@ -17,16 +17,32 @@ def testrs():
     '''
     eq = EQ()
     tests = [(0, 1000), (1, 1005), (1, 1000), (1, 995), (1, 990)]
-    for t in tests:
-        print(f"{t}: {eq._iswin(*t)}, {eq.wr(*t)}")
+    #for t in tests:
+    #    print(f"{t}: {eq._iswin(*t)}, {eq.wr(*t)}")
     # print(eq.eq.shape, eq.eq[1]) # should be 0.5
 
-    
-    for bet in [20]: # [15, 20, 25, 40, 80, 200]:
+    '''
+    for bet in [200]: # [15, 20, 25, 40, 80, 200]:
         print(f"\n------- bet = {bet} -------")
-        cur = State(1000, turn = 19, equitizer = eq)
+        cur = State(1000, turn = 15, equitizer = eq)
         ret = ss.FR(bet, cur, verbose = True)
         print(ret)
+    '''
+
+    '''
+    for BBchip in [900, 930, 960, 1000, 1030, 1060, 1100]:
+        print(f"\n------- BBchip = {BBchip} -------")
+        cur = State(BBchip, turn = 15, equitizer = eq)
+        ret = ss.FR(200, cur, verbose = True)
+        print(ret)
+    '''
+
+    for turn in [19, 15, 12, 10, 8, 5]:
+        print(f"\n------- turn = {turn} -------")
+        cur = State(950, turn = turn, equitizer = eq)
+        ret = ss.FR(200, cur, verbose = True)
+        print(ret)
+
 
 def gen_eval(comm, hands):
     tmp, nHands = [], len(hands)
