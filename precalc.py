@@ -16,10 +16,10 @@ from pre.test import testrs as testrs2
 
 # testAoF()
 
-# EZ().gen()
+EZ().gen()
 #eq = EQ()
 #for i in range(850, 1150, 10):
 #    print(f"wr({i}): {eq.wr(18, i)}")
 
 #testrp()
-testrs2()
+#testrs2()
