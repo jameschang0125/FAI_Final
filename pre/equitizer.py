@@ -14,9 +14,9 @@ class Equitizer():
     nHands = 13 * 13
 
     def __init__(self):
-        self.eq = np.zeros((20, self.size * 2 + 1)) # turn left, BB.chips (BEFORE paying BB) - 860
-        self.BBr = np.zeros((20, self.size * 2 + 1, self.nHands))
-        self.SBr = np.zeros((20, self.size * 2 + 1, self.nHands))
+        self.eq = np.zeros((21, self.size * 2 + 1)) # turn left, BB.chips (BEFORE paying BB) - 860
+        self.BBr = np.zeros((21, self.size * 2 + 1, self.nHands))
+        self.SBr = np.zeros((21, self.size * 2 + 1, self.nHands))
 
     @classmethod
     def __thre(self, turn, isBB):
@@ -105,7 +105,7 @@ class Equitizer():
                 , BBpath = "pre/res/AoFBBr.pickle"
                 , SBpath = "pre/res/AoFSBr.pickle"
                 , **kwargs):
-        for i in range(20):
+        for i in range(21):
             print(f"[PROGRESS] equitizer.__gen({i})")
             self.__gen(i, **kwargs)
 
@@ -122,7 +122,8 @@ class Equitizer():
                 pickle.dump(self.SBr, f)
 
         # DEBUG
+        np.set_printoptions(precision = 3, suppress = True)
         s = self.size - 10
-        for i in range(20):
+        for i in range(21):
             print(f"turn{i} :: \neq: {self.eq[i]}\nBBr:{self.BBr[i][s]}\nSBr:{self.SBr[i][s]}")
         

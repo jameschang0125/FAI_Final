@@ -9,5 +9,5 @@ from pre.test import testrp, testrs, testeq
 # testrs()
 # eqtestrs()
 # testpre()
-# testeq()
-testAoF()
+testeq()
+# testAoF()
