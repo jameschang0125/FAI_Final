@@ -22,9 +22,32 @@ class presearcher():
         return: action, myr(R/C), oppr(R/C)
         convert preflop ranges to postflop
         '''
+        myid = self.ss.h2h2i(myh)
+
+        # use precalced AoF
+        if BB == False: # rsize = 1000
+            tmp = EQ._iswin(turn + 1, BBchip + 10)
+            if tmp is not None: return tmp, None, None
+            aprob = self.equitizer.SBr[turn + 1][int(BBchip + 10 - EQ.offset)][myid]
+            if aprob > 0.99: return 1, None, None
+            if aprob < 0.01: return 0, None, None
+            return int(random() < aprob), None, None
+        else:
+            tmp = EQ._iswin(turn + 1, BBchip + 10)
+            if tmp is not None: return (2 if tmp == 0 else 0), None, None
+            # check if opp. ALLINed, tmp == 0 means opp. will lose if FOLDS
+            tmp = EQ._iswin(turn, 2000 - (BBchip + rsize + 10))
+            if tmp == 0:
+                idx = int(BBchip + 10 - EQ.offset)
+                # idx = min(max(0, idx), EQ.size * 2)
+                aprob = self.equitizer.BBr[turn + 1][idx][myid]
+                if aprob > 0.99: return 2, None, None
+                if aprob < 0.01: return 0, None, None
+                return int(random() < aprob) * 2, None, None
+
+
         cur = State(BBchip, turn = turn, equitizer = self.equitizer)
         v, a, c = self.ss.FR(rsize, cur)
-        myid = self.ss.h2h2i(myh)
         c, cold = self.actall(c), c
         act = c[myid] if BB else int(myid <= self.modifier(a, turn)) # int(myid <= a)
 

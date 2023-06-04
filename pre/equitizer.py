@@ -40,6 +40,7 @@ class Equitizer():
 
     @classmethod
     def _iswin(self, turn, x):
+        u, d = self.size + self.__thre(turn, True), self.size - self.__thre(turn, False)
         return self.__win(turn, x - self.offset)
 
     def _calc(self, turn, x):
