@@ -84,15 +84,22 @@ class Equitizer():
                 self.eq[0][i] = 1
             return
 
-        work = np.arange(self.size * 2 + 1)
+        # accelerate for prevent repeat calc
+        work = []
+        for i in np.arange(self.size * 2 + 1):
+            if i % 5 <= 1:
+                work.append(i)
+
         calc = partialmethod(self._AoFcalc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
 
         # print(ret[0])
+        for i, x in enumerate(work):
+            self.eq[turn][x], self.BBr[turn][x], self.SBr[turn][x] = ret[i]
+            if x % 5 == 1:
+                for y in range(x + 1, x + 4):
+                    self.eq[turn][y], self.BBr[turn][y], self.SBr[turn][y] = ret[i]
 
-        self.eq[turn] = np.array([r[0] for r in ret])
-        self.BBr[turn] = np.array([r[1] for r in ret])
-        self.SBr[turn] = np.array([r[2] for r in ret])
     
     def gen(self, eqpath = "pre/res/AoFeq.pickle"
                 , BBpath = "pre/res/AoFBBr.pickle"
