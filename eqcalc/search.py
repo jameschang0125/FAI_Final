@@ -109,7 +109,7 @@ class searcher():
         for i in range(self.nHands):
             for j in range(self.nHands):
                 tmp = (1 - oppr[j]) * sfEV 
-                tmp += oppr[j] * (myr[i] * self.RP.hvh(i, j) + (1 - myr[j]) * fEV)
+                tmp += oppr[j] * (myr[i] * self.RP.hvh(i, j) + (1 - myr[i]) * fEV)
                 val += tmp * self.RP.combprob(i, j)
 
         return val, myr, oppr

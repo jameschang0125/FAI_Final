@@ -18,13 +18,15 @@ class State():
         return 0.5 + 0.2 * (self.my + x - 1000) / (7.5 * self.turn)
 
     def wr(self, x):
+        return self.eqt.wr(self.turn, self.my + x) if self.isBB else 1 - self.eqt.wr(self.turn, 2000 - self.my - x)
+        '''
         if self.isBB:
             if self.eqt is None: return self.__wr(x)
             return self.eqt.wr(self.turn, self.my + x)
         else:
             if self.eqt is None: return 1 - self.__wr(-x)
             return 1 - self.eqt.wr(self.turn, 2000 - self.my - x)
-
+        '''
 
     def to(self, my = 0):
         return State(self.my + my, equitizer = self.eqt)
