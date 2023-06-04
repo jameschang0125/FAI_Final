@@ -13,9 +13,13 @@ from eqcalc.presearch import presearcher as pre
 def testAoF():
     ss = SS()
     eq = EQ()
-    cur = State(990, turn = 1, equitizer = eq)
-    ret = ss.AoF(cur)
-    print(ret)
+    for i, j in [(850, 19), (857, 18), (865, 17)]:
+        print(f"\n({i}, {j})")
+        cur = State(i, turn = j, equitizer = eq)
+        ret = ss.AoF(cur)
+        v, a, c = ret
+        print(c)
+        print(v)
 
 
 def testpre():

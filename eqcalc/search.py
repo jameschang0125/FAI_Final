@@ -125,7 +125,9 @@ class searcher():
                 if pr == 0: continue
                 tmp = myr[j] * self.RP.hvh(j, i) + (1 - myr[j]) * fEV
                 aEV += tmp * pr
-            fEV2 = sfEV * self.RP.prob(j) 
+            fEV2 = sfEV * self.RP.prob(i) 
+            #if it == 300:
+            #    print(f"{self.i2s(i)} :: aEV = {'%.4f'%(aEV/self.RP.prob(i))}, fEV = {'%.4f'%sfEV}")
             oppr2[i] = 1 if aEV < fEV2 else 0
 
         # BB BR

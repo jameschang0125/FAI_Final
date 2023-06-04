@@ -11,7 +11,7 @@ def testeq():
     eqold = EQ(eqpath = "pre/res/eq.pickle")
     eq = EQ()
     np.set_printoptions(precision = 3, suppress = True)
-    for i in range(1, 19):
+    for i in range(1, 20):
         print(f"--- {i} ---")
         # print(eqold.eq[i])
         print(eq.eq[i])
