@@ -5,6 +5,18 @@ from eqcalc.state import State
 from pre.equireader import Equireader as EQ
 from eqcalc.search import searcher as SS # hs2s
 
+import numpy as np
+
+def testeq():
+    eqold = EQ(eqpath = "pre/res/eq.pickle")
+    eq = EQ()
+    np.set_printoptions(precision = 3, suppress = True)
+    for i in range(1, 19):
+        print(f"--- {i} ---")
+        # print(eqold.eq[i])
+        print(eq.eq[i])
+    
+
 def testrp():
     pos = [(i, j) for i, j in product(range(4), range(2, 15))]
     BBr = []

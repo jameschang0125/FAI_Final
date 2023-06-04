@@ -1,6 +1,6 @@
 from pre.winrater import winRater as WR
 from pre.range_preprocesser import RangePreProcesser as RPP
-from eqcalc.test import testrs, testAoF
+from eqcalc.test import testrs, testAoF, testeq
 from pre.equitizer import Equitizer as EZ
 from pre.equireader import Equireader as EQ
 from pre.test import testrp

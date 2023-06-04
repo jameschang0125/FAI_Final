@@ -84,11 +84,11 @@ class searcher():
 
         myr, oppr = np.zeros((self.nHands)), np.zeros((self.nHands))
         for i in range(self.nHands):
-            myr[i] = c[1][i]
+            myr[i] = int(c[1][i] + c[0][i] > 0.5)
             oppr[i] = int(i <= a)
         
-        # print(myr)
-        # print(oppr)
+        #print(myr)
+        #print(oppr)
 
         lr, decay = 0.8, 0.97 # 0.8 * 0.97 ** 200 ~ 0.5%
         for it in range(1, iter):
@@ -99,7 +99,7 @@ class searcher():
                 print(oppr)
             '''
 
-            myr2, oppr2 = self.AoF_iter(state, myr, oppr)
+            myr2, oppr2 = self.AoF_iter(state, myr, oppr, it)
             myr = myr2 * (1 - lr) + myr * lr
             oppr = oppr2 * (1 - lr) + oppr * lr
         
@@ -114,7 +114,7 @@ class searcher():
 
         return val, myr, oppr
 
-    def AoF_iter(self, state, myr, oppr):
+    def AoF_iter(self, state, myr, oppr, it = None):
         # SB BR
         fEV, sfEV = state.wr(0), state.wr(15)
         oppr2 = np.zeros(self.nHands)
@@ -138,6 +138,7 @@ class searcher():
                 tprob += pr * oppr[j]
                 aEV += pr * oppr[j] * self.RP.hvh(i, j)
             fEV2 = fEV * tprob
+            # if it % 40 == 0: print(f"#{i} : aEV = {'%.5f'%aEV}, fEV = {'%.5f'%fEV2}")
             myr2[i] = 1 if aEV > fEV2 else 0
         
         return myr2, oppr2

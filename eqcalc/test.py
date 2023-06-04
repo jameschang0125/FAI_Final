@@ -13,7 +13,7 @@ from eqcalc.presearch import presearcher as pre
 def testAoF():
     ss = SS()
     eq = EQ()
-    cur = State(1000, turn = 2, equitizer = eq)
+    cur = State(990, turn = 1, equitizer = eq)
     ret = ss.AoF(cur)
     print(ret)
 
