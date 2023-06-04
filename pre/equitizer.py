@@ -69,7 +69,7 @@ class Equitizer():
         if y == 1: return y, np.zeros(self.nHands), np.ones(self.nHands)
 
         ss = SS()
-        state = State(self.offset + x - 10, True, turn - 1, self)
+        state = State(self.offset + x - 10, False, turn - 1, self)
         v, myr, oppr = ss.AoF(state)
         return v, myr, oppr
 
