@@ -25,28 +25,60 @@ class presearcher():
         myid = self.ss.h2h2i(myh)
 
         # use precalced AoF
-        if BB == False: # rsize = 1000
+        if BB == False: # SB, rsize = 1000
             tmp = EQ._iswin(turn + 1, BBchip + 10)
-            if tmp is not None: return tmp, None, None
+            if tmp is not None: 
+                if self.debug: print(f"[pre] BB = False, direct return {tmp}")
+                return tmp, None, None
             aprob = self.equitizer.SBr[turn + 1][int(BBchip + 10 - EQ.offset)][myid]
+            
+            if self.debug:
+                np.set_printoptions(precision = 3, suppress = True)
+                print(f"[DEBUG] ({turn + 1}, {int(BBchip + 10 - EQ.offset)})")
+                print(f"SBr = {self.equitizer.SBr[turn + 1][int(BBchip + 10 - EQ.offset)]}")
+                print(f"BBr = {self.equitizer.BBr[turn + 1][int(BBchip + 10 - EQ.offset)]}")
+            
             if aprob > 0.99: return 1, None, None
             if aprob < 0.01: return 0, None, None
             return int(random() < aprob), None, None
-        else:
+        else: # BB
             tmp = EQ._iswin(turn + 1, BBchip + 10)
-            if tmp is not None: return (2 if tmp == 0 else 0), None, None
+            if tmp is not None: 
+                if self.debug: print(f"[pre] BB = True, direct return {2 if tmp == 0 else 0}")
+                return (2 if tmp == 0 else 0), None, None
             # check if opp. ALLINed, tmp == 0 means opp. will lose if FOLDS
             tmp = EQ._iswin(turn, 2000 - (BBchip + rsize + 10))
             if tmp == 0:
                 idx = int(BBchip + 10 - EQ.offset)
                 # idx = min(max(0, idx), EQ.size * 2)
                 aprob = self.equitizer.BBr[turn + 1][idx][myid]
+                if self.debug:
+                    np.set_printoptions(precision = 3, suppress = True)
+                print(f"[DEBUG] ({turn + 1}, {idx})")
+                print(f"SBr = {self.equitizer.SBr[turn + 1][idx]}")
+                print(f"BBr = {self.equitizer.BBr[turn + 1][idx]}")
                 if aprob > 0.99: return 2, None, None
                 if aprob < 0.01: return 0, None, None
                 return int(random() < aprob) * 2, None, None
-
-
+        
+        ## BB R - ...
         cur = State(BBchip, turn = turn, equitizer = self.equitizer)
+        myr, myrc, oppr, opprc = self.ss.R_AoF(rsize, cur)
+        # RA, RC, R, RAA
+
+        if self.debug:
+            np.set_printoptions(precision = 3, suppress = True)
+            print(f"R-A = {myr}\nR-C = {myrc}\nR = {oppr}\nR-A-A = {opprc}")
+
+        myhs, ophs = [], []
+        act = self.choosefrom2(myrc[myid], myr[myid])
+        for i in range(self.ss.nHands):
+            if myrc[i] > 0.4: myhs.append(i)
+            if oppr[i] < 0.6: ophs.append(i)    
+
+        myr, oppr = self.hs2hs(myhs), self.hs2hs(ophs)
+
+        '''
         v, a, c = self.ss.FR(rsize, cur)
         c, cold = self.actall(c), c
         act = c[myid] if BB else int(myid <= self.modifier(a, turn)) # int(myid <= a)
@@ -56,6 +88,7 @@ class presearcher():
             if x == 1: myhs.append(i)
         oppr = self.r2hs(a)
         myr = self.hs2hs(myhs)
+        '''
 
         allset = set(self.r2hs(self.ss.nHands - 1))
         myrset, opprset = set(myr), set(oppr)
@@ -67,6 +100,7 @@ class presearcher():
                 oppr.append(i)
 
         # DEBUG
+        '''
         if self.debug:
             #if BB:
             tmp = []
@@ -74,14 +108,22 @@ class presearcher():
                 if c[i] == 2: tmp.append(i)
             print(f"[pre calc] BB shoving {self.ss.is2s(tmp)}")
             #else:
-            print(f"[pre calc] SB shoving {self.ss.is2s(range(a + 1))}")
-
+            print(f"[pre calc] SB raising {self.ss.is2s(range(a + 1))}")
+        '''
         return act, myr, oppr
     
     def modifier(self, x, turn, rate = 0.8):
         rate = ((20 - turn) + rate * (turn - 10)) / 10 if turn < 10 else 1
         if x >= self.ss.nHands - 10: return x
         return int(x * rate)
+
+    def choosefrom2(self, p1, p2):
+        '''
+        p1 : return 1
+        p2 : return 2
+        '''
+        tmp = random()
+        return 1 if tmp < p1 else (2 if tmp < p1 + p2 else 0)
 
     def actall(self, c):
         return [self.actfunc(c[0][i], c[1][i]) for i in range(self.ss.nHands)]

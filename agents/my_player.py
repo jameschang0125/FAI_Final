@@ -49,7 +49,7 @@ class MyPlayer(BasePokerPlayer):
                 else: return self.C() if act == 1 else self.F()
             else:
                 rsize = 1000
-                act, self.oppr, self.myr = self.pre.calc(self.my, self.turn, rsize, self.cards, BB = False)
+                act, self.oppr, self.myr = self.pre.calc(self.opp, self.turn, rsize, self.cards, BB = False)
                 return self.A() if act else self.F()
         else: # POSTFLOP BB
             street = round_state['street']
@@ -125,7 +125,7 @@ def show_ai():
     return MyPlayer(showhand = True)
 
 def test_ai():
-    return MyPlayer(debug = True, showhand = False)
+    return MyPlayer(debug = True, showhand = True)
 
 def setup_ai():
     return MyPlayer()

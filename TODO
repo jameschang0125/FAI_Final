@@ -2,30 +2,8 @@ TASKS [IMPROTANCE]
 
 FP in preflop and postflop
 
+`wc -l agents/*.py eqcalc/*.py pre/*.py test/*.py`
 
-
-
-['S4', 'HA']
-Started the round 1
-Street "preflop" started. (community card = [])
-"p2" declared "call:10"
-"p1" declared "call:10"
-Street "flop" started. (community card = ['ST', 'S8', 'H4'])
-"p2" declared "call:0"
-"p1" declared "call:0"
-Street "turn" started. (community card = ['ST', 'S8', 'H4', 'C4'])
-"p2" declared "call:0"
-"p1" declared "call:0"
-Street "river" started. (community card = ['ST', 'S8', 'H4', 'C4', 'C2'])
-"p2" declared "call:0"
-"p1" declared "call:0"
-"['p1']" won the round 1 (stack = {'p1': 1010, 'p2': 990})
-['HT', 'HJ']
-Started the round 2
-Street "preflop" started. (community card = [])
-"p1" declared "raise:1010"
-"p2" declared "call:1010"
-Street "flop" started. (community card = ['S5', 'CJ', 'HK'])
-Street "turn" started. (community card = ['S5', 'CJ', 'HK', 'D9'])
-Street "river" started. (community card = ['S5', 'CJ', 'HK', 'D9', 'SA'])
-"['p1']" won the round 2 (stack = {'p1': 2000, 'p2': 0})
+BB = 1040 + 10
+turn left = 9
+AoF

@@ -71,6 +71,94 @@ class searcher():
     def h2h2i(self, h):
         return self.h2i(self.h2h(h))
 
+    def R_AoF(self, bet, state, iter = 61, lr = 0.8, decay = 0.93, pen = 0.95):
+        # R, R(F/C/A), RAA
+        v, a, c, cc = self.FR(bet, state, verbose = True)
+
+        # RA, RC, R, RAA
+        n = self.nHands
+        myr, myrc, oppr, opprc = np.zeros(n), np.zeros(n), np.zeros(n), np.zeros(n)
+        for i in range(n):
+            if c[1][i] > 0.5: myr[i] = 1
+            elif c[1][i] + c[0][i] > 0.5: myrc[i] = 1
+            
+            if i <= a: 
+                oppr[i] = 1
+                if i <= cc: opprc[i] = 1
+
+        for it in range(1, iter):
+            myr2, myrc2, oppr2, opprc2 = self.R_AoF_iter(bet, state, myr, myrc, oppr, opprc, pen, it)
+            myr = myr2 * (1 - lr) + myr * lr
+            myrc = myrc2 * (1 - lr) + myrc * lr
+            oppr = oppr2 * (1 - lr) + oppr * lr
+            opprc = opprc2 * (1 - lr) + opprc * lr
+        
+        return myr, myrc, oppr, opprc
+
+    def R_AoF_iter(self, bet, state, myr, myrc, oppr, opprc, pen, it = None):
+        n = self.nHands
+        cfEV, fEV, sfEV, srfEV = state.wr(-(bet - 10)), state.wr(0), state.wr(15), state.wr(bet + 10)
+
+        # RA, RC, R, RAA
+        myr2, myrc2, oppr2, opprc2 = np.zeros(n), np.zeros(n), np.zeros(n), np.zeros(n)
+
+        # SB
+        for i in range(n):
+            ffEV = sfEV * self.RP.prob(i)
+            tprob, rfEV, raEV = 0, 0, 0
+            for j in range(n):
+                pr = self.RP.combprob(j, i)
+                tprob += pr
+                eqt = self.RP.hvh(j, i)
+                rfEV += pr * (myr[j] * srfEV + myrc[j] * (eqt * srfEV + (1 - eqt) * fEV) + (1 - myr[j] - myrc[j]) * fEV)
+                raEV += pr * (myr[j] * eqt + myrc[j] * (eqt * srfEV + (1 - eqt) * fEV) + (1 - myr[j] - myrc[j]) * fEV)
+            best = min(ffEV, rfEV, raEV)
+
+            # DEBUG
+            # if it == 300: print(f"{self.i2s(i).ljust(3)}: ff = {'%.4f'%(ffEV/tprob)}, rf = {'%.4f'%(rfEV/tprob)}, ra = {'%.4f'%(raEV/tprob)}")
+
+            if best == raEV:
+                oppr2[i] = 1
+                opprc2[i] = 1
+            elif best == rfEV:
+                oppr2[i] = 1
+        
+        # DEBUG
+        # if it == 300: print("\n --------------------------- \n")
+
+        # BB
+        for i in range(n):
+            tprob, cEV, aEV = 0, 0, 0
+            for j in range(n):
+                pr = self.RP.combprob(i, j) * oppr[j]
+                tprob += pr
+                eqt = self.RP.hvh(i, j)
+                peqt = eqt * pen
+                cEV += pr * (peqt * srfEV + (1 - peqt) * cfEV)
+                aEV += pr * (oppr2[j] * eqt + (1 - oppr2[j]) * srfEV)
+            ffEV = fEV * tprob
+            best = max(ffEV, cEV, aEV)
+            # DEBUG
+            # if it == 60: print(f"{self.i2s(i).ljust(3)}: ff = {'%.4f'%(ffEV/tprob)}, c = {'%.4f'%(cEV/tprob)}, a = {'%.4f'%(aEV/tprob)}")
+
+            if best == aEV:
+                myr2[i] = 1
+            elif best == cEV:
+                myrc2[i] = 1
+
+        # DEBUG
+        '''
+        if it == 300: 
+            print("\n --------------------------- \n")
+            print("R - A", myr2, "R - C", myrc2, sep = "\n")
+            print("R", oppr2, "R - A - A", opprc2, sep = "\n")
+            print("\n --------------------------- \n")
+        '''
+
+        return myr2, myrc2, oppr2, opprc2
+
+
+
     def AoF(self, state, iter = 301, lr = 0.8, decay = 0.97):
         '''
         calculate almost exact Nash. (probably) need to be precomputed.
@@ -156,7 +244,6 @@ class searcher():
 
         # PRE
         fEV = state.wr(self.BB * 1.5)
-        if verbose: print(f"fEV = {fEV}")
 
         vac = []
         for i in list(range(0, self.nHands, 10)) + [self.nHands - 1]:

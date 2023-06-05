@@ -40,4 +40,6 @@ if __name__ == '__main__':
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40)
-        print(f"p1 winrate = {np.sum(r) / N}")
+        p = np.sum(r) / N
+        stderr = (p * (1 - p) / N) ** 0.5
+        print(f"p1 winrate = {p} ± {stderr}")

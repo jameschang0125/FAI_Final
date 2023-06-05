@@ -16,7 +16,7 @@ class researcher():
         self.slowp = postslowp
         self.award = postCCaward # award C-C line
 
-    def R_AoF(self, pot, rsize, state, iter = 61, lr = 0.8, decay = 0.92):
+    def R_AoF(self, pot, rsize, state, iter = 61, lr = 0.8, decay = 0.93):
         '''
         similar to search.AoF
         '''
@@ -45,7 +45,7 @@ class researcher():
 
 
          # 0.8 * 0.865 ** 30 ~ 1%
-        for it in tqdm(range(1, iter)):
+        for it in range(1, iter): # tqdm(range(1, iter)):
             myr_2, myrc_2, oppr_2, opprc_2, opprc2_2 = self.R_AoF_iter(pot, rsize, state, myr, myrc, oppr, opprc, opprc2)
             myr = myr_2 * (1 - lr) + myr * lr
             myrc = myrc_2 * (1 - lr) + myrc * lr

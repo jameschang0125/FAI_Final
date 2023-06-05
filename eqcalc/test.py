@@ -10,6 +10,17 @@ from tqdm import tqdm
 
 from eqcalc.presearch import presearcher as pre
 
+def testpreR_AoF():
+    np.set_printoptions(precision = 3, suppress = True)
+    ss = SS()
+    eq = EQ()
+    cur = State(990, 19, equitizer = eq)
+    myr, myrc, oppr, opprc = ss.R_AoF(30, cur)
+
+    print("R - A", myr, "R - C", myrc, sep = "\n")
+    print("R", oppr, "R - A - A", opprc, sep = "\n")
+
+
 def testAoF():
     ss = SS()
     eq = EQ()

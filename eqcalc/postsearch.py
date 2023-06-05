@@ -3,13 +3,14 @@ from eqcalc.research import researcher as RS
 from eqcalc.state import State
 from pre.equireader import Equireader as EQ
 from random import random
+import numpy as np
 
 class postsearcher():
     '''
     addresses the problem that researcher is not very consistent (due to random sampling)
     '''
     def __init__(self, postkeeprate = 0.5, postdrawrate = 0.2, debug = True, 
-                postactfunc = None, postnSearch = 3, **kwargs):
+                postactfunc = None, postnSearch = 5, **kwargs):
         self.equitizer = EQ()
         self.keeprate = postkeeprate
         self.drawrate = postdrawrate
@@ -48,12 +49,27 @@ class postsearcher():
             if i not in opprset and random() < self.drawrate:
                 OPPR.append(i)
 
-        return CA, RA, MYR, OPPR
+        return self.actfunc(CA), self.actfunc(RA), MYR, OPPR
     
     def __calc(self, myr, oppr, comm, cur, myh, pot, rsize):
         rp = RP(myr, oppr, comm, myh)
         rs = RS(rp, **self.kwargs)
         myid = rp.h2i(myh)
+
+        # CA, RA, R, RAA, CAA
+        myr, myrc, oppr, opprc, opprc2 = rs.R_AoF(pot, rsize, cur)
+
+        ca, ra = myr[myid], myrc[myid]
+
+        myr2, oppr2, m, n = [], [], rp.nHands(BB = True), rp.nHands(BB = False)
+        for i in range(m):
+            if random() < myr[i] + self.keeprate:
+                myr2.append(rp.i2h(i, BB = True))
+        for i in range(n):
+            if random() < oppr[i] + self.keeprate:
+                oppr2.append(rp.i2h(i, BB = False))
+
+        '''
         v, c, Rc, Cc, Ccc = rs.CR(pot, rsize, cur)
 
         # a(C) == A
@@ -68,14 +84,14 @@ class postsearcher():
         for i in range(c + 1):
             if random() < self.keeprate:
                 oppr2.append(rp.i2h(i))
-
+        '''
 
         # DEBUG
         if self.debug:
-            print(f"[__calc] C-A : {rp.hs2s(rp.is2h(list(range(Cc + 1))))}")
-            print(f"[__calc] R-A : {rp.hs2s(rp.is2h(list(range(Rc + 1))))}")
+            print(f"[__calc] C-A : {rp.hs2s(rp.is2h(np.where(myr > 0.9)[0]))}")
+            print(f"[__calc] R-A : {rp.hs2s(rp.is2h(np.where(myrc > 0.9)[0]))}")
 
-        return self.actfunc(CA), self.actfunc(RA), myr2, oppr2
+        return ca, ra, myr2, oppr2
 
     @classmethod
     def act(self, act):
