@@ -1,6 +1,7 @@
 from pre.range_processer import RangeProcesser as RP
 from eqcalc.state import State
 import numpy as np
+from tqdm import tqdm
 
 class researcher():
     '''
@@ -15,7 +16,7 @@ class researcher():
         self.slowp = postslowp
         self.award = postCCaward # award C-C line
 
-    def R_AoF(self, pot, rsize, state, iter = 31):
+    def R_AoF(self, pot, rsize, state, iter = 61, lr = 0.8, decay = 0.92):
         '''
         similar to search.AoF
         '''
@@ -43,8 +44,8 @@ class researcher():
             elif i <= Ccc: opprc2[i] = 1
 
 
-        lr, decay = 0.8, 0.865 # 0.8 * 0.865 ** 30 ~ 1%
-        for it in range(1, iter):
+         # 0.8 * 0.865 ** 30 ~ 1%
+        for it in tqdm(range(1, iter)):
             myr_2, myrc_2, oppr_2, opprc_2, opprc2_2 = self.R_AoF_iter(pot, rsize, state, myr, myrc, oppr, opprc, opprc2)
             myr = myr_2 * (1 - lr) + myr * lr
             myrc = myrc_2 * (1 - lr) + myrc * lr
@@ -58,21 +59,53 @@ class researcher():
         m, n = self.RP.nHands(BB = True), self.RP.nHands(BB = False)
         fEV, sfEV, srfEV = state.wr(0), state.wr(pot), state.wr(pot + rsize)
         
+        # CA, RA, R, RAA, CAA
         myr_2, myrc_2, oppr_2, opprc_2, opprc2_2 = np.zeros(m), np.zeros(m), np.zeros(n), np.zeros(n), np.zeros(n)
 
         # SB TODO
         for i in range(n):
             rfEV, raEV, cfEV, caEV = 0, 0, 0, 0
-            # TODO
-            best = max(rfEV, raEV, cfEV, caEV)
+            
+            for j in range(m):
+                pr = self.RP.combprob(j, i)
+                if pr == 0: continue
+                eqt = self.RP.hvh(j, i)
+                rfEV += pr * (fEV * myrc[j] + srfEV * (1 - myrc[j]))
+                raEV += pr * (fEV * myrc[j] + eqt * (1 - myrc[j]))
+                cfEV += pr * (sfEV * myr[j] + (eqt * sfEV + (1 - eqt) * fEV) * (1 - myr[j]))
+                caEV += pr * (eqt * myr[j] + (eqt * sfEV + (1 - eqt) * fEV) * (1 - myr[j]))
+
+            best = min(rfEV, raEV, cfEV, caEV)
             if best == rfEV:
                 oppr_2[i] = 1
             elif best == raEV:
                 oppr_2[i], opprc_2[i] = 1, 1
             elif best == caEV:
-                oppr2_2[i] = 1
+                opprc2_2[i] = 1
 
         # BB TODO
+        for i in range(m):
+            # (rf, ra) is ind. to (cf, cc)
+            rfEV, raEV, ccEV, caEV = 0, 0, 0, 0
+
+            for j in range(n):
+                pr = self.RP.combprob(i, j)
+                if pr == 0: continue
+                eqt = self.RP.hvh(i, j)
+                rfEV += pr * oppr[j] * fEV
+                raEV += pr * (eqt * opprc[j] + srfEV * (oppr[j] - opprc[j]))
+                ccEV += pr * (1 - oppr[j]) * (eqt * sfEV + (1 - eqt) * fEV)
+                caEV += pr * (1 - oppr[j]) * (opprc2[j] * eqt + (1 - opprc2[j]) * sfEV)
+            
+            bestr = max(rfEV, raEV)
+            if raEV == bestr:
+                myrc_2[i] = 1
+            bestc = max(ccEV, caEV)
+            if caEV == bestc:
+                myr_2[i] = 1
+        
+        return myr_2, myrc_2, oppr_2, opprc_2, opprc2_2
+
 
     def CR(self, pot, rsize, state, pen = 0, verbose = False):
         '''

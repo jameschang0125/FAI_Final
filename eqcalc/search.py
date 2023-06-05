@@ -71,7 +71,7 @@ class searcher():
     def h2h2i(self, h):
         return self.h2i(self.h2h(h))
 
-    def AoF(self, state, iter = 301):
+    def AoF(self, state, iter = 301, lr = 0.8, decay = 0.97):
         '''
         calculate almost exact Nash. (probably) need to be precomputed.
 
@@ -90,7 +90,6 @@ class searcher():
         #print(myr)
         #print(oppr)
 
-        lr, decay = 0.8, 0.97 # 0.8 * 0.97 ** 200 ~ 0.5%
         for it in range(1, iter):
             '''
             if it % 40 == 0:

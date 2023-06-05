@@ -1,7 +1,7 @@
 from eqcalc.test import testwr, testarr, testpre, testAoF
 from eqcalc.test import testrs as eqtestrs
 from test.test import test
-from pre.test import testrp, testrs, testeq
+from pre.test import testrp, testrs, testeq, testpostAoF
 
 # testarr()
 # testwr()
@@ -9,5 +9,7 @@ from pre.test import testrp, testrs, testeq
 # testrs()
 # eqtestrs()
 # testpre()
-testeq()
+# testeq()
 # testAoF()
+
+testpostAoF()

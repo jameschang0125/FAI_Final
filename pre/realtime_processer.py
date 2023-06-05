@@ -43,6 +43,9 @@ class RealtimeProcesser(RangeProcesser):
     
     def is2h(self, i, BB = True):
         return [self.i2h(j, BB) for j in i]
+    
+    def is2s(self, i, BB = True):
+        return self.hs2s(self.is2h(i, BB))
 
     def h2i(self, h, BB = True):
         return self.BB2i[h] if BB else self.SB2i[h]

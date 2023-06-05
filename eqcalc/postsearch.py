@@ -14,8 +14,9 @@ class postsearcher():
         self.keeprate = postkeeprate
         self.drawrate = postdrawrate
         self.debug = debug
-        if postactfunc is None:
-            self.actfunc = self.act
+        
+        self.actfunc = self.act if postactfunc is None else postactfunc
+
         self.nSearch = postnSearch
         self.kwargs = kwargs
 
@@ -78,7 +79,7 @@ class postsearcher():
 
     @classmethod
     def act(self, act):
-        return 1 if act > 0.5 else 0
+        return 1 if act > 0.9 else (0 if act < 0.1 else int(random() < act ** 2))
 
     @classmethod
     def purify(self, x, y):

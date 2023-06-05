@@ -1,15 +1,7 @@
 TASKS [IMPROTANCE]
 
-mixsearch [PREFER]
-    - implement a class that choose between R and A
-    - assume opp. responded as FCA()
+FP in preflop and postflop
 
-research [MUST]
-    - general FA when hand order is given
-    - some other dependencies needed
-
-hyperparam [MUST]
-    - simple against tests
 
 
 
