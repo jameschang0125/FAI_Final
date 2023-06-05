@@ -49,6 +49,9 @@ class postsearcher():
             if i not in opprset and random() < self.drawrate:
                 OPPR.append(i)
 
+        if self.debug:
+            print(f"[POST] C - A = {CA}, R - A = {RA}")
+
         return self.actfunc(CA), self.actfunc(RA), MYR, OPPR
     
     def __calc(self, myr, oppr, comm, cur, myh, pot, rsize):
