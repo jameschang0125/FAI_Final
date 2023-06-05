@@ -54,9 +54,9 @@ class presearcher():
                 aprob = self.equitizer.BBr[turn + 1][idx][myid]
                 if self.debug:
                     np.set_printoptions(precision = 3, suppress = True)
-                print(f"[DEBUG] ({turn + 1}, {idx})")
-                print(f"SBr = {self.equitizer.SBr[turn + 1][idx]}")
-                print(f"BBr = {self.equitizer.BBr[turn + 1][idx]}")
+                    print(f"[DEBUG] ({turn + 1}, {idx})")
+                    print(f"SBr = {self.equitizer.SBr[turn + 1][idx]}")
+                    print(f"BBr = {self.equitizer.BBr[turn + 1][idx]}")
                 if aprob > 0.99: return 2, None, None
                 if aprob < 0.01: return 0, None, None
                 return int(random() < aprob) * 2, None, None
