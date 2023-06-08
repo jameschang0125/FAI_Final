@@ -84,3 +84,11 @@ def testdeep():
     with np.printoptions(precision = 3, suppress = True):
         print(np.array(ans))
     gt.show()
+
+from subagent.preflop import preflopper
+def testpreflopper():
+    PRE = preflopper()
+    myh = ((3, 14), (3, 12)) # AQs
+    init = PRE.act(1000, 15, myh) # SB
+    sseq = PRE.act(1000, 15, myh, init, 65, debug = True) # SB
+    print(f"init: {init}, sseq: {sseq}")

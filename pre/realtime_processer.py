@@ -12,7 +12,7 @@ from game.engine.card import Card
 from random import shuffle, sample
 
 class RealtimeProcesser(RangeProcesser):
-    def __init__(self, BBr, SBr, comm, BBincl = None, SBincl = None, rsSize = 50, csSize = 50):
+    def __init__(self, BBr, SBr, comm, BBincl = None, SBincl = None, rsSize = 100, csSize = 50):
         '''
         BBr & SBr : collection of (c, c)
         c : (suit, rank)

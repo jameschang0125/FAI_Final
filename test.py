@@ -2,7 +2,7 @@ from eqcalc.test import testwr, testarr, testpre, testAoF, testpreR_AoF
 from eqcalc.test import testrs as eqtestrs
 from test.test import test
 from pre.test import testrp, testrs, testeq, testpostAoF
-from eqcalc.testdeep import testdeep
+from eqcalc.testdeep import testdeep, testpreflopper
 
 # testarr()
 # testwr()
@@ -17,4 +17,5 @@ from eqcalc.testdeep import testdeep
 
 # testpreR_AoF()
 
-testdeep()
+# testdeep()
+testpreflopper()

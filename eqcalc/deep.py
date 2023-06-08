@@ -1,7 +1,8 @@
 import numpy as np
 
 # dtype = 'float16'
-
+# positive signature are reserved for raise
+SIGGT = -1
 class GameTree():
     def __init__(self, lr = 0.9, decay = 0.98, **kwargs):
         '''
@@ -14,18 +15,57 @@ class GameTree():
         self.BBpaid, self.SBpaid = 0, 0
         self.term = False
         self.msg = ""
+        self.train = True
+        self.children = []
+        self.signature = SIGGT
         # inherited class initialize, then construct child
         # print(f"[CONSTRUCTOR] {type(self)}")
 
     def _buildChild(self, constructorTree):
         self.BBh, self.SBh = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
-        self.children = []
         # print(f"[BUILDTREE] {constructorTree}")
         for c, v in constructorTree.items():
             if isinstance(c, type):
                 self.children.append(c(self, v))
         nHands, nChild = (self.BBh if self.isBB else self.SBh), len(self.children)
         self.actprob = np.full((nChild, nHands), 1 / nChild)
+
+    def addChild(self, constructorTree):
+        # also resets the weights
+        for c, v in constructorTree.items():
+            self.children.append(c(self, v))
+        nHands, nChild = (self.BBh if self.isBB else self.SBh), len(self.children)
+        self.actprob = np.full((nChild, nHands), 1 / nChild)
+
+    def lock(self, depth = 1):
+        self.train = False
+        if depth > 1:
+            for c in self.children:
+                c.lock(depth - 1)
+    
+    def reset(self, lr = 0.9):
+        self.lr = lr
+        for c in self.children:
+            c.reset(lr)
+
+    def find(self, *signatures):
+        if len(signatures) == 0: return self
+        for c in self.children:
+            if c.signature == signatures[0]:
+                return c.find(*(signatures[1:]))
+        return None
+
+    def condprob(self, *signatures):
+        if len(signatures) == 0: 
+            BBh, SBh = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
+            return np.ones(BBh), np.ones(SBh)
+        for i, c in enumerate(self.children):
+            if c.signature == signatures[0]:
+                BBr, SBr = c.condprob(*(signatures[1:]))
+                if self.isBB:
+                    return BBr * self.actprob[i], SBr
+                else:
+                    return BBr, SBr * self.actprob[i]
 
     def update(self, BBr, SBr):
         '''
@@ -38,37 +78,44 @@ class GameTree():
             condp = BBr * self.actprob
             tmp = np.array([c.update(condp[i], SBr) for i, c in enumerate(self.children)])
             v = np.sum(tmp, axis = 0)
-            maxt = np.argmax(np.sum(tmp, axis = 2) / condp, axis = 0)
-            self.actprob *= 1 - self.lr
-            for i, t in enumerate(maxt):
-                self.actprob[t][i] += self.lr
+            if self.train:
+                maxt = np.argmax(np.sum(tmp, axis = 2) / condp, axis = 0)
+                self.actprob *= 1 - self.lr
+                for i, t in enumerate(maxt):
+                    self.actprob[t][i] += self.lr
         else:
             condp = SBr * self.actprob
             tmp = np.array([c.update(BBr, condp[i]) for i, c in enumerate(self.children)])
             v = np.sum(tmp, axis = 0)
-            mint = np.argmin(np.sum(tmp, axis = 1) / condp, axis = 0)
-            self.actprob *= 1 - self.lr
-            for i, t in enumerate(mint):
-                self.actprob[t][i] += self.lr
+            if self.train:
+                mint = np.argmin(np.sum(tmp, axis = 1) / condp, axis = 0)
+                self.actprob *= 1 - self.lr
+                for i, t in enumerate(mint):
+                    self.actprob[t][i] += self.lr
         
         self.lr *= self.decay
         return v            
 
-    def show(self, msg = None):
+    def show(self, msg = None, suppress = True):
+        eps = 1e-3
         if not self.term:
             if msg is None: prefix = ""
             else: prefix = msg + " - "
             with np.printoptions(precision = 3, suppress = True):
                 for i, c in enumerate(self.children):
-                    print(prefix + c.msg, self.actprob[i], sep = '\n')
+                    if suppress and np.sum(self.actprob[i]) > eps:
+                        print(prefix + c.msg, self.actprob[i], sep = '\n')
             for c in self.children:
-                c.show(prefix + c.msg)
+                if suppress and np.sum(self.actprob[i]) > eps:
+                    c.show(prefix + c.msg)
 
+SIGROOT = -1
 class ROOT(GameTree):
     def __init__(self, rp, state, **kwargs):
         super().__init__(**kwargs)
         self.rp = rp
         self.state = state
+        self.signature = 0
         n, m = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
         self.BBr, self.SBr = np.ones(n), np.ones(m)
 
@@ -109,20 +156,24 @@ class InheritGT(GameTree):
 
 # terminals
 # CALL incl. terminal CHECKS
+SIGCALLIN = -2
 class CALLIN(InheritGT):
     def __init__(self, gt, ct = None, **kwargs):
         super().__init__(gt, **kwargs)
         self.term = True
-        self.msg = "C"    
+        self.msg = "C"
+        self.signature = SIGCALLIN
     
     def update(self, BBr, SBr):
         return np.outer(BBr, SBr) * self.rp.fw
 
+SIGCALL = -3
 class CALL(InheritGT):
     def __init__(self, gt, ct = None, **kwargs):
         super().__init__(gt, **kwargs)
         self.term = True
         self.msg = "C"
+        self.signature = SIGCALL
         if not self.isBB: self.BBpaid = self.SBpaid
         else: self.SBpaid = self.BBpaid
 
@@ -133,11 +184,13 @@ class CALL(InheritGT):
     def update(self, BBr, SBr):
         return np.outer(BBr, SBr) * self.EV
 
+SIGFOLD = -4
 class FOLD(InheritGT):
     def __init__(self, gt, ct = None, **kwargs):
         super().__init__(gt, **kwargs)
         self.term = True
         self.msg = "F"
+        self.signature = SIGFOLD
         if not self.isBB: self.EV = self.state(-self.BBpaid) * self.rp.fq
         else: self.EV = self.state(self.SBpaid) * self.rp.fq
 
@@ -152,14 +205,16 @@ def RAISE(x = None, msg = "R"):
         def __init__(self, gt, ct, **kwargs):
             super().__init__(gt, **kwargs)
             self.msg = msg
+            self.signature = 1 if x is None else x
             if x is not None:
                 if not self.isBB: self.BBpaid = x
                 else: self.SBpaid = x
             self._buildChild(ct)
     return _RAISE
 
+CHECK = RAISE(x = 0, msg = "C")
 LIMP = RAISE(x = 10, msg = "C")
-ALLIN = RAISE(msg = "A")
+ALLIN = RAISE(msg = "A") # signature 1
 
 # constructors
 class BLINDS(ROOT):
@@ -169,13 +224,16 @@ class BLINDS(ROOT):
         self.SBpaid = 5
         self._buildChild(ct)
 
-def POT(x = None):
+def POT(x = None, y = None):
     class _POT(ROOT):
         def __init__(self, rp, state, ct, **kwargs):
             super().__init__(rp, state, **kwargs)
             if x is not None:
-                self.BBpaid = x / 2
-                self.SBpaid = x / 2
+                if y is None:
+                    self.BBpaid = x / 2
+                    self.SBpaid = x / 2
+                else:
+                    self.BBpaid, self.SBpaid = x, y
             self._buildChild(ct)
     return _POT
 
