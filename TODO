@@ -1,9 +1,79 @@
 TASKS [IMPROTANCE]
 
-FP in preflop and postflop
+BLINDS(
+    FOLD(
+        ...
+    ),
+    CALL(
+        ...
+    ),
+    RAISE(25,
+        ...
+    ),
+    ALLIN(
+        ...
+    ),
+)
+
+
+increase action space:
+
+basically, we want to support arbitrary action space FP, but also can hardcode.
+
+SB : PREFLOP
+
+- F
+- C - C
+    - A*- F
+        - C
+        - A - A
+            - F
+- A - F 
+    - C
+    - A
+
+BB : PREFLOP (SB: R)
+
+- C
+- R - F
+    - A*- A
+        - F
+- A - A
+    - F
+
+SB : POSTFLOP
+
+- C - C
+    - A*- F
+        - A
+- R - F
+    - C
+    - A*- F
+        - A
+- A - F
+    - A
+
+BB : POSTFLOP 
+
+(SB: C)
+- C
+- R - A*- F
+        - A
+- A - F
+    - A
+
+(SB: R)
+- F
+- C
+- A - F
+    - A
+
+(SB: A)
+- F
+- A
+
+
+A* = recompute if 3B \neq A
 
 `wc -l agents/*.py eqcalc/*.py pre/*.py test/*.py`
-
-BB = 1040 + 10
-turn left = 9
-AoF
+`git log --shortstat --pretty=oneline --graph`
