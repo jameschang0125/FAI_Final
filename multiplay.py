@@ -22,15 +22,16 @@ from baseline4 import setup_ai as baseline4_ai
 
 ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, call_ai, random_ai]
 
-def play(id):
+def play(id, **kwargs):
     config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
+    my = deep_ai(**kwargs)
     if random() < 0.5:
-        config.register_player(name = "p1", algorithm = deep_ai())
+        config.register_player(name = "p1", algorithm = my)
         config.register_player(name = "p2", algorithm = ais[id]())
         switched = False
     else:
         config.register_player(name = "p2", algorithm = ais[id]())
-        config.register_player(name = "p1", algorithm = deep_ai())
+        config.register_player(name = "p1", algorithm = my)
         switched = True
 
     res = start_poker(config, verbose = 0)
