@@ -158,7 +158,9 @@ class MyPlayer(BasePokerPlayer):
                 if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
                 else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
         except:
-            print(f"{street}, {round_state}")
+            print(f"[STACK] {self.my} vs {self.opp}")
+            print(f"[VALUE] {self.allined}, {self.sleep}")
+            print(f"[OTHER]{street}, {round_state}")
 
 
     def receive_game_update_message(self, action, round_state):
