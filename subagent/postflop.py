@@ -28,7 +28,11 @@ class postflopper():
                         FOLD: None,
                         CALLIN: None
                     }
-                } for i in range(10, 71, 5)}
+                } for i in range(10, 71, 5)},
+                ALLIN: {
+                    FOLD: None,
+                    CALLIN: None
+                }
             },
             **{
             RAISE(i, msg = f"R({i})"): {
@@ -58,7 +62,11 @@ class postflopper():
                         FOLD: None,
                         CALLIN: None
                     }
-                } for i in range(10, 71, 5)}
+                } for i in range(10, 71, 5)},
+                ALLIN: {
+                    FOLD: None,
+                    CALLIN: None
+                }
             },
             RAISE(rsize, msg = f"R"): {
                 FOLD: None,

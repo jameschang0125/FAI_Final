@@ -19,8 +19,10 @@ from baseline1 import setup_ai as baseline1_ai
 from baseline2 import setup_ai as baseline2_ai
 from baseline3 import setup_ai as baseline3_ai
 from baseline4 import setup_ai as baseline4_ai
+from baseline5 import setup_ai as baseline5_ai
 
-ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, call_ai, random_ai]
+# baseline 4 is ignored for stablility reasons
+ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, call_ai, baseline5_ai, random_ai]
 
 def play(id, **kwargs):
     config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
@@ -41,7 +43,7 @@ def play(id, **kwargs):
     return 1 - tmp if switched else tmp
 
 if __name__ == '__main__':
-    N = 100
+    N = 200
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40, chunksize = 1)

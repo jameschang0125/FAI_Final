@@ -16,9 +16,11 @@ from baseline2 import setup_ai as baseline2_ai
 from baseline3 import setup_ai as baseline3_ai
 from baseline4 import setup_ai as baseline4_ai
 '''
+
+from baseline5 import setup_ai as baseline5_ai
 config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
 config.register_player(name = "p1", algorithm = deep_ai())
-config.register_player(name = "p2", algorithm = call_ai())
+config.register_player(name = "p2", algorithm = baseline5_ai())
 
 ## Play in interactive mode if uncomment
 #config.register_player(name="me", algorithm=console_ai())
