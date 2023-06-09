@@ -125,6 +125,8 @@ class MyPlayer(BasePokerPlayer):
                 self.my = s["stack"]
             else:
                 self.opp = s["stack"]
+        
+        if self.debug: print(f"[DEBUG][player.roundstart] {self.my} vs {self.opp}")
 
     def receive_street_start_message(self, street, round_state):
         if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
