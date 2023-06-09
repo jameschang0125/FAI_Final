@@ -7,6 +7,7 @@ from subagent.postflop import postflopper as POST
 from eqcalc.deep import *
 from util.shower import Shower
 from pre.equitizer import Equitizer as EQ
+import json
 
 class MyPlayer(BasePokerPlayer):
     def __init__(self, debug = False, showhand = False, **kwargs):
@@ -165,11 +166,11 @@ class MyPlayer(BasePokerPlayer):
             print(f"[VALUE] {self.allined}, {self.sleep}")
             print(f"[OTHER]{street}, {round_state}")
             try:
-                print(f"preTree: {self.pre.gt.getTree()}")
+                print(f"preTree: {json.dumps(self.pre.gt.getTree(), indent = 4)}")
             except:
                 pass
             try:
-                print(f"postTree: {self.post.gt.getTree()}")
+                print(f"postTree: {json.dumps(self.post.gt.getTree(), indent = 4)}")
             except:
                 pass
             print(e)
