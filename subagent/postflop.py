@@ -46,7 +46,7 @@ class postflopper():
         })
 
     def BB_default(self, cur, pot, rsize):
-        if rsize == 0: return self.SB_default(cur, pot)
+        if rsize == 0 or rsize == 1: return self.SB_default(cur, pot)
         return POT(pot)(self.rp, cur, {
             CHECK: {
                 CALL: None,
