@@ -9,7 +9,7 @@ from agents.console_player import setup_ai as console_ai
 from agents.my_player import setup_ai as my_ai
 from agents.my_player import quiet_ai, test_ai
 from random import random
-from deep_player import setup_ai as deep_ai
+from agents.deep_player import setup_ai as deep_ai
 
 # from extern.skywalker_2 import setup_ai as casper_ai
 import numpy as np
