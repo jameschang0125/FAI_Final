@@ -30,7 +30,7 @@ def play(id):
         switched = False
     else:
         config.register_player(name = "p2", algorithm = ais[id]())
-        config.register_player(name = "p1", algorithm = quiet_ai())
+        config.register_player(name = "p1", algorithm = deep_ai())
         switched = True
 
     res = start_poker(config, verbose = 0)
