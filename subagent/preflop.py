@@ -87,7 +87,7 @@ class preflopper():
             }
         }
 
-    def act(self, BBchip, turn, myh, *actions, nIter = 500):
+    def act(self, BBchip, turn, myh, *actions, nIter = 250):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature

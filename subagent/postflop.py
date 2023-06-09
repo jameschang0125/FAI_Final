@@ -86,7 +86,7 @@ class postflopper():
             }
         }
 
-    def act(self, BBchip, turn, myh, pot, *actions, nIter = 500):
+    def act(self, BBchip, turn, myh, pot, *actions, nIter = 250):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature
