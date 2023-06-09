@@ -157,10 +157,13 @@ class MyPlayer(BasePokerPlayer):
                 BBr, SBr = self.post.ranges(self.hand, *self.actions, minSamples = minSamples)
                 if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
                 else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
-        except:
+        except KeyboardInterrupt:
+            exit()
+        except Exception as e:
             print(f"[STACK] {self.my} vs {self.opp}")
             print(f"[VALUE] {self.allined}, {self.sleep}")
             print(f"[OTHER]{street}, {round_state}")
+            print(e)
 
 
     def receive_game_update_message(self, action, round_state):
