@@ -139,22 +139,27 @@ class MyPlayer(BasePokerPlayer):
         rs = round_state["community_card"]
         self.comm = [self.s2c(c) for c in rs]
 
-        if street == "preflop":
-            self.pre = PRE(debug = self.debug)
-        elif street == "flop":
-            self.actions = self.transform(round_state['action_histories']['preflop'][2:])
-            if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
-            BBr, SBr = self.pre.ranges(self.hand, *self.actions)
-            if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
-            else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
-        else:
-            minSamples = 60 if street == "turn" else 36
-            prev = "flop" if street == "turn" else "turn"
-            self.actions = self.transform(round_state['action_histories'][prev])
-            if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
-            BBr, SBr = self.post.ranges(self.hand, *self.actions, minSamples = minSamples)
-            if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
-            else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
+        # [DEBUG] tmp
+        try:
+            if street == "preflop":
+                self.pre = PRE(debug = self.debug)
+            elif street == "flop":
+                self.actions = self.transform(round_state['action_histories']['preflop'][2:])
+                if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
+                BBr, SBr = self.pre.ranges(self.hand, *self.actions)
+                if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
+                else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
+            else:
+                minSamples = 60 if street == "turn" else 36
+                prev = "flop" if street == "turn" else "turn"
+                self.actions = self.transform(round_state['action_histories'][prev])
+                if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
+                BBr, SBr = self.post.ranges(self.hand, *self.actions, minSamples = minSamples)
+                if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
+                else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
+        except:
+            print(f"{street}, {round_state}")
+
 
     def receive_game_update_message(self, action, round_state):
         pass

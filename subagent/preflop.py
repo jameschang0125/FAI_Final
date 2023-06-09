@@ -157,7 +157,7 @@ class preflopper():
         if self.debug: 
             print(f"[DEBUG][preflop.ranges] actions = {actions}")
             print(f"[DEBUG][preflop.ranges] gt.getTree = {self.gt.getTree()}")
-
+        
         BBp, SBp = self.gt.condprob(*actions)
         BBp, SBp = self.norm(BBp), self.norm(SBp)
 
