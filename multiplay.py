@@ -9,6 +9,7 @@ from agents.console_player import setup_ai as console_ai
 from agents.my_player import setup_ai as my_ai
 from agents.my_player import quiet_ai, test_ai
 from random import random
+from deep_player import setup_ai as deep_ai
 
 # from extern.skywalker_2 import setup_ai as casper_ai
 import numpy as np
@@ -24,7 +25,7 @@ ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, cal
 def play(id):
     config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
     if random() < 0.5:
-        config.register_player(name = "p1", algorithm = quiet_ai())
+        config.register_player(name = "p1", algorithm = deep_ai())
         config.register_player(name = "p2", algorithm = ais[id]())
         switched = False
     else:

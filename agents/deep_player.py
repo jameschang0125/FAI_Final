@@ -151,5 +151,5 @@ class MyPlayer(BasePokerPlayer):
         pass
 
 
-def setup_ai():
-    return MyPlayer(debug = True)
+def setup_ai(debug = False):
+    return MyPlayer(debug = debug)
