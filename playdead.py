@@ -1,5 +1,5 @@
-from multiplay import play
-from random import randint, ais
+from multiplay import play, ais
+from random import randint
 
 N = 100
 for i in range(N):
