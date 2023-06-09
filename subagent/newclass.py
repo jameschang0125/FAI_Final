@@ -5,6 +5,7 @@ from pre.realtime_processer import RealtimeProcesser
 class PostRangeProcesser(RealtimeProcesser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # print(f"[DEBUG][RP.init] {self.wr.shape}, {len(self.SBr)}, {self.SB_i2h.shape}")
 
 
 class PreRangeProcesser():
