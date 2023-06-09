@@ -28,7 +28,7 @@ class preflopper():
                         FOLD: None,
                         CALLIN: None
                     }
-                } for i in range(15, 35)}
+                } for i in range(15, 36, 5)}
             },
             **{
             RAISE(i, msg = f"R({i})"): {
@@ -38,7 +38,7 @@ class preflopper():
                     FOLD: None,
                     CALLIN: None
                 }
-            } for i in range(15, 35)},
+            } for i in range(15, 36, 5)},
             ALLIN: {
                 FOLD: None,
                 CALLIN: None
@@ -59,7 +59,7 @@ class preflopper():
                         FOLD: None,
                         CALLIN: None
                     }
-                } for i in range(15, 35)}
+                } for i in range(15, 36, 5)}
             },
             RAISE(rsize): {
                 FOLD: None,

@@ -6,6 +6,7 @@ from subagent.preflop import preflopper as PRE
 from subagent.postflop import postflopper as POST
 from eqcalc.deep import *
 from util.shower import Shower
+from pre.equitizer import Equitizer as EQ
 
 class MyPlayer(BasePokerPlayer):
     def __init__(self, debug = False, showhand = False, **kwargs):
@@ -46,6 +47,13 @@ class MyPlayer(BasePokerPlayer):
         BBchip = self.my if self.isBB else self.opp
 
         if round_state['street'] == 'preflop':
+            tmp = EQ._iswin(self.turn, BBchip)
+            if tmp is not None:
+                if tmp == 1:
+                    return self.F() if self.isBB else self.A()
+                if tmp == 0:
+                    return self.A() if self.isBB else self.F()
+
             self.actions = self.transform(round_state['action_histories']['preflop'][2:])
             if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
             action = self.pre.act(BBchip, self.turn, self.hand, *self.actions)
@@ -105,22 +113,20 @@ class MyPlayer(BasePokerPlayer):
         self.isBB = seats[0]["uuid"] == self.uuid if (self.isBB is None) else (not self.isBB)
         self.turn = 19 - round_count
         self.allined = False
-
         if self.debug: print(f"self.hand = {Shower.h2s(self.hand)}")
 
-    def receive_street_start_message(self, street, round_state):
-        if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
-
-        if self.allined: return
-
-        rs = round_state["seats"]
-        for pos in range(len(rs)):
-            s = rs[pos]
+        for pos in range(len(seats)):
+            s = seats[pos]
             if s["uuid"] == self.uuid:
                 self.pos = pos
                 self.my = s["stack"]
             else:
                 self.opp = s["stack"]
+
+    def receive_street_start_message(self, street, round_state):
+        if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
+
+        if self.allined: return
         
         rs = round_state["pot"]
         self.pot = rs["main"]["amount"]

@@ -28,7 +28,7 @@ class postflopper():
                         FOLD: None,
                         CALLIN: None
                     }
-                } for i in range(15, 71, 5)}
+                } for i in range(10, 71, 5)}
             },
             **{
             RAISE(i, msg = f"R({i})"): {
@@ -38,7 +38,7 @@ class postflopper():
                     FOLD: None,
                     CALLIN: None
                 }
-            } for i in range(15, 71, 5)},
+            } for i in range(10, 71, 5)},
             ALLIN: {
                 FOLD: None,
                 CALLIN: None
@@ -58,7 +58,7 @@ class postflopper():
                         FOLD: None,
                         CALLIN: None
                     }
-                } for i in range(15, 71, 5)}
+                } for i in range(10, 71, 5)}
             },
             RAISE(rsize, msg = f"R"): {
                 FOLD: None,
