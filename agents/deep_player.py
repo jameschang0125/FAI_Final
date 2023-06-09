@@ -113,7 +113,7 @@ class MyPlayer(BasePokerPlayer):
     def receive_round_start_message(self, round_count, hole_card, seats):
         self.hand = tuple(sorted((self.s2c(c) for c in hole_card)))
         self.isBB = seats[0]["uuid"] == self.uuid if (self.isBB is None) else (not self.isBB)
-        self.turn = 19 - round_count
+        self.turn = 20 - round_count
         self.allined = False
         self.sleep = False
         if self.debug: print(f"self.hand = {Shower.h2s(self.hand)}")
@@ -131,6 +131,7 @@ class MyPlayer(BasePokerPlayer):
     def receive_street_start_message(self, street, round_state):
         if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
 
+        if EQ._iswin(self.turn, self.my) is not None: return
         if self.allined or self.sleep: return
 
         rs = round_state["pot"]
@@ -163,6 +164,14 @@ class MyPlayer(BasePokerPlayer):
             print(f"[STACK] {self.my} vs {self.opp}")
             print(f"[VALUE] {self.allined}, {self.sleep}")
             print(f"[OTHER]{street}, {round_state}")
+            try:
+                print(f"preTree: {self.pre.gt.getTree()}")
+            except:
+                pass
+            try:
+                print(f"postTree: {self.post.gt.getTree()}")
+            except:
+                pass
             print(e)
 
 
