@@ -110,7 +110,7 @@ class GameTree():
         returns a dictionary
         '''
         if self.term: return self.signature
-        return ((self.signature, c.getTree()) for c in self.children)
+        return tuple((self.signature, c.getTree()) for c in self.children)
 
     def show(self, msg = None, suppress = True):
         eps = 1e-3
