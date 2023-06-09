@@ -40,7 +40,7 @@ def play(id):
     return 1 - tmp if switched else tmp
 
 if __name__ == '__main__':
-    N = 400
+    N = 100
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40)

@@ -133,7 +133,24 @@ class preflopper():
     def norm(self, x):
         return x / np.max(x)
 
-    def ranges(self, myh, *actions, eps = 0.02):
+    def sampleFrom(self, BBp, BB = True, eps = 0.02):
+        BBh = self.rp.nHands(BB = True) if BB else self.rp.nHands(BB = False)
+        BBr = []
+        for i in range(BBh):
+            x = self.rp.i2h(i, BB = BB)
+            for h in x:
+                if random() < BBp[i] + eps: BBr.append(h)
+        return BBr
+    
+    def sample(self, p, BB = True, eps = 0.02, minSamples = 100):
+        cnt, BBr, ieps = 0, self.sampleFrom(p, BB, eps), eps
+        while cnt < 10 and len(BBr) < minSamples:
+            cnt += 1
+            p, ieps = p ** 0.8, ieps + 0.5 * eps
+            BBr = self.sampleFrom(p, BB, eps)
+        return BBr
+
+    def ranges(self, myh, *actions, eps = 0.02, minSamples = 100):
         '''
         given an action line, output (could be a sample) of BBr, SBr
         '''
@@ -141,19 +158,12 @@ class preflopper():
 
         BBp, SBp = self.gt.condprob(*actions)
         BBp, SBp = self.norm(BBp), self.norm(SBp)
-        BBh, SBh = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
 
         if self.debug:
             with np.printoptions(precision = 3, suppress = True):
                 print(f"[DEBUG][preflop.ranges] BBp, SBp = \n{BBp}\n{SBp}")
 
-        BBr, SBr = [], []
-        for i in range(BBh):
-            x, y = self.rp.i2h(i, BB = True), self.rp.i2h(i, BB = False)
-            for h in x:
-                if random() < BBp[i] + eps: BBr.append(h)
-            for h in y:
-                if random() < SBp[i] + eps: SBr.append(h)
+        BBr, SBr = self.sample(BBp, True, eps, minSamples), self.sample(SBp, False, eps, minSamples)
         
         if self.debug:
             print(f"[DEBUG][preflop.ranges]: \nBBr = {Shower.hs2s(BBr)}\nSBr = {Shower.hs2s(SBr)}")

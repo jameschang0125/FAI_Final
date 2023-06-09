@@ -62,7 +62,7 @@ class GameTree():
 
         # DEBUG
         poss = [c.signature for c in self.children]
-        print(f"[DEBUG][deep.condprob] poss = {poss}")
+        # print(f"[DEBUG][deep.condprob] poss = {poss}")
 
         for i, c in enumerate(self.children):
             if c.signature == signatures[0]:
