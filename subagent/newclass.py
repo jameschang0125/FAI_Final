@@ -27,6 +27,24 @@ class PreRangeProcesser():
     def nHands(self, BB = True):
         return 169
     
+    def i2h(self, i, BB = True):
+        h = self._i2h[i]
+        x, y = i % 13 + 2, i // 13 + 2
+        ans = []
+        if x == y:
+            for j in range(4):
+                for k in range(j):
+                    ans.append(tuple(sorted(((j, x), (k, y)))))
+        elif x > y: # xyo
+            for j in range(4):
+                for k in range(4):
+                    if j != k:
+                        ans.append(tuple(sorted(((j, x), (k, y)))))
+        else:
+            for j in range(4):
+                ans.append(tuple(sorted(((j, x), (j, y)))))
+        return ans
+
     def h2i(self, h, BB = True):
         x, y = h
         m, n = x[1] - 2, y[1] - 2

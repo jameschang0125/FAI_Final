@@ -59,6 +59,11 @@ class GameTree():
         if len(signatures) == 0: 
             BBh, SBh = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
             return np.ones(BBh), np.ones(SBh)
+
+        # DEBUG
+        poss = [c.signature for c in self.children]
+        print(f"[DEBUG][deep.condprob] poss = {poss}")
+
         for i, c in enumerate(self.children):
             if c.signature == signatures[0]:
                 BBr, SBr = c.condprob(*(signatures[1:]))
@@ -66,6 +71,10 @@ class GameTree():
                     return BBr * self.actprob[i], SBr
                 else:
                     return BBr, SBr * self.actprob[i]
+        
+        # error
+        poss = [c.signature for c in self.children]
+        raise ValueError(f"couldn't find signatures {signatures} within {poss}!")
 
     def update(self, BBr, SBr):
         '''

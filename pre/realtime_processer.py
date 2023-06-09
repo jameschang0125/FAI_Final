@@ -37,6 +37,7 @@ class RealtimeProcesser(RangeProcesser):
         # DEBUG
         # print(self.fw)
         # print(wrt)
+        print(f"[DEBUG][RP.init] {self.wr.shape}, {len(self.SBr)}, {self.SB_i2h.shape}")
 
     def i2h(self, i, BB = True):
         return self.BBr[self.BB_i2h[i]] if BB else self.SBr[self.SB_i2h[i]]

@@ -5,6 +5,7 @@ from game.engine.card import Card
 from subagent.preflop import preflopper as PRE
 from subagent.postflop import postflopper as POST
 from eqcalc.deep import *
+from util.shower import Shower
 
 class MyPlayer(BasePokerPlayer):
     def __init__(self, debug = False, showhand = False, **kwargs):
@@ -17,21 +18,28 @@ class MyPlayer(BasePokerPlayer):
 
     def transform(self, msgs):
         # no need for FOLD or CALLIN
-        ans, called = [], False
-        for msg in msgs:
+        ans, shoved = [], False
+        for i, msg in enumerate(msgs):
             if msg['action'] == 'CALL':
-                if called: ans.append(SIGCALL)
+                if i > 0: 
+                    if shoved: ans.append(SIGCALLIN)
+                    else: ans.append(SIGCALL)
                 else:
                     if msg['paid'] > 0: ans.append(10)  # LIMP
                     else: ans.append(0) # CHECK
             elif msg['action'] == 'FOLD':
                 ans.append(SIGFOLD)
             else:
-                if msg['amount'] > 150: ans.append(1)
+                if msg['amount'] > 150: 
+                    ans.append(1) # ALLIN
+                    shoved = True
                 else: ans.append(msg['amount'])
+            
+        if self.debug: print(f"[DEBUG][player.transform] msgs = {msgs}, ans = {ans}")
         return ans
 
     def declare_action(self, valid_actions, hole_card, round_state):
+        if self.debug: print(f"[DEBUG][player.declare...] street = {round_state['street']}")
         self.valids = valid_actions
         if self.allined: return self.A()
 
@@ -39,14 +47,16 @@ class MyPlayer(BasePokerPlayer):
 
         if round_state['street'] == 'preflop':
             self.actions = self.transform(round_state['action_histories']['preflop'][2:])
+            if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
             action = self.pre.act(BBchip, self.turn, self.hand, *self.actions)
-            self.actions.append(action)
+            # self.actions.append(action)
             return self.act(action)
         else: # POSTFLOP
             street = round_state['street']
             self.actions = self.transform(round_state['action_histories'][street])
-            action = self.post.act(BBchip, self.turn, self.hand, *self.actions)
-            self.actions.append(action)
+            if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
+            action = self.post.act(BBchip, self.turn, self.hand, self.pot, *self.actions)
+            # self.actions.append(action)
             return self.act(action)
 
     def act(self, action):
@@ -91,13 +101,18 @@ class MyPlayer(BasePokerPlayer):
         return self.s2suit[s[0]], self.s2rank[s[1]]
 
     def receive_round_start_message(self, round_count, hole_card, seats):
-        if self.showhand: print(hole_card)
         self.hand = tuple(sorted((self.s2c(c) for c in hole_card)))
         self.isBB = seats[0]["uuid"] == self.uuid if (self.isBB is None) else (not self.isBB)
         self.turn = 19 - round_count
         self.allined = False
 
+        if self.debug: Shower.show(self.hand)
+
     def receive_street_start_message(self, street, round_state):
+        if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
+
+        if self.allined: return
+
         rs = round_state["seats"]
         for pos in range(len(rs)):
             s = rs[pos]
@@ -113,15 +128,20 @@ class MyPlayer(BasePokerPlayer):
         rs = round_state["community_card"]
         self.comm = [self.s2c(c) for c in rs]
 
-        if round_state["street"] == "preflop":
+        if street == "preflop":
             self.pre = PRE(debug = self.debug)
-        elif round_state["street"] == "flop":
-            BBr, SBr = self.pre.ranges(*self.actions)
-            if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand) 
+        elif street == "flop":
+            self.actions = self.transform(round_state['action_histories']['preflop'][2:])
+            if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
+            BBr, SBr = self.pre.ranges(self.hand, *self.actions)
+            if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
             else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
         else:
-            BBr, SBr = self.pre.ranges(*self.actions)
-            if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand) 
+            prev = "flop" if street == "turn" else "turn"
+            self.actions = self.transform(round_state['action_histories'][prev])
+            if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
+            BBr, SBr = self.post.ranges(self.hand, *self.actions)
+            if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
             else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
 
     def receive_game_update_message(self, action, round_state):
@@ -130,15 +150,6 @@ class MyPlayer(BasePokerPlayer):
     def receive_round_result_message(self, winners, hand_info, round_state):
         pass
 
-
-def quiet_ai():
-    return MyPlayer()
-
-def show_ai():
-    return MyPlayer(showhand = True)
-
-def test_ai():
-    return MyPlayer(debug = True, showhand = True)
 
 def setup_ai():
     return MyPlayer(debug = True)
