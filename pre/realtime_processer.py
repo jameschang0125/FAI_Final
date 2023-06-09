@@ -94,9 +94,9 @@ class RealtimeProcesser(RangeProcesser):
     def wr(self, fw, fq, BB = True):
         m, n = fw.shape
         if BB:
-            return np.array([np.sum(fw[i]) / np.sum(fq[i]) for i in range(m)])
+            return np.array([np.sum(fw[i]) / np.sum(fq[i]) if np.sum(fq[i]) > 0 else 0.5 for i in range(m)])
         fw, fq = np.swapaxes(fw, 0, 1), np.swapaxes(fq, 0, 1) 
-        return np.array([1 - np.sum(fw[i]) / np.sum(fq[i]) for i in range(n)])
+        return np.array([1 - np.sum(fw[i]) / np.sum(fq[i]) if np.sum(fq[i]) > 0 else 0.5 for i in range(n)])
 
     def nHands(self, BB):
         return self.fw.shape[0] if BB else self.fw.shape[1]
