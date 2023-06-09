@@ -34,7 +34,7 @@ class MyPlayer(BasePokerPlayer):
                 if msg['amount'] > 150: 
                     ans.append(1) # ALLIN
                     shoved = True
-                else: ans.append(msg['amount'])
+                else: ans.append(int(msg['amount']))
             
         if self.debug: print(f"[DEBUG][player.transform] msgs = {msgs}, ans = {ans}")
         return ans
@@ -49,6 +49,7 @@ class MyPlayer(BasePokerPlayer):
         if round_state['street'] == 'preflop':
             tmp = EQ._iswin(self.turn, BBchip)
             if tmp is not None:
+                self.sleep = True
                 if tmp == 1:
                     return self.F() if self.isBB else self.A()
                 if tmp == 0:
@@ -68,6 +69,7 @@ class MyPlayer(BasePokerPlayer):
             return self.act(action)
 
     def act(self, action):
+        if self.debug: print(f"[DEBUG][player.act] {action}")
         if action == SIGCALLIN: return self.A()
         if action == 1: return self.A()
         if action == SIGCALL: return self.C()
@@ -113,6 +115,7 @@ class MyPlayer(BasePokerPlayer):
         self.isBB = seats[0]["uuid"] == self.uuid if (self.isBB is None) else (not self.isBB)
         self.turn = 19 - round_count
         self.allined = False
+        self.sleep = False
         if self.debug: print(f"self.hand = {Shower.h2s(self.hand)}")
 
         for pos in range(len(seats)):
@@ -126,8 +129,8 @@ class MyPlayer(BasePokerPlayer):
     def receive_street_start_message(self, street, round_state):
         if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
 
-        if self.allined: return
-        
+        if self.allined or self.sleep: return
+
         rs = round_state["pot"]
         self.pot = rs["main"]["amount"]
 

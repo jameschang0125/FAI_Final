@@ -105,6 +105,13 @@ class GameTree():
         self.lr *= self.decay
         return v            
 
+    def getTree(self):
+        '''
+        returns a dictionary
+        '''
+        if self.term: return self.signature
+        return ((self.signature, c.getTree()) for c in self.children)
+
     def show(self, msg = None, suppress = True):
         eps = 1e-3
         if not self.term:
