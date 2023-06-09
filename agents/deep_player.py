@@ -106,7 +106,7 @@ class MyPlayer(BasePokerPlayer):
         self.turn = 19 - round_count
         self.allined = False
 
-        if self.debug: Shower.show(self.hand)
+        if self.debug: print(f"self.hand = {Shower.h2s(self.hand)}")
 
     def receive_street_start_message(self, street, round_state):
         if self.debug: print(f"[DEBUG][player.receive...] street = {street}")

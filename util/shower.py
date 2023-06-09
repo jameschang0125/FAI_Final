@@ -16,5 +16,4 @@ class Shower():
     def show(self, hs):
         if isinstance(hs, list) or isinstance(hs, tuple):
             print(self.hs2s(hs))
-        else:
-            print(self.h2s(hs))
+        raise ValueError
