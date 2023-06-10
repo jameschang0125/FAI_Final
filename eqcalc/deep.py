@@ -18,6 +18,7 @@ class GameTree():
         self.train = True
         self.children = []
         self.signature = SIGGT
+        self.mark = False # DEBUG purpose
         # inherited class initialize, then construct child
         # print(f"[CONSTRUCTOR] {type(self)}")
 
@@ -55,6 +56,11 @@ class GameTree():
                 return c.find(*(signatures[1:]))
         return None
 
+    def marked(self):
+        self.mark = True
+        for c in self.children:
+            c.marked()
+
     def condprob(self, *signatures):
         if len(signatures) == 0: 
             BBh, SBh = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
@@ -84,24 +90,53 @@ class GameTree():
         for terminal nodes, just simply overwrite this function
         '''
         if self.isBB:
-            condp = BBr * self.actprob
+            condp = self.actprob * BBr
             tmp = np.array([c.update(condp[i], SBr) for i, c in enumerate(self.children)])
             v = np.sum(tmp, axis = 0)
             if self.train:
-                maxt = np.argmax(np.sum(tmp, axis = 2) / condp, axis = 0)
+                tmp2 = np.sum(tmp, axis = 2) / self.actprob
+                maxt = np.argmax(tmp2, axis = 0)
                 self.actprob *= 1 - self.lr
                 for i, t in enumerate(maxt):
                     self.actprob[t][i] += self.lr
         else:
-            condp = SBr * self.actprob
+            condp = self.actprob * SBr
             tmp = np.array([c.update(BBr, condp[i]) for i, c in enumerate(self.children)])
             v = np.sum(tmp, axis = 0)
             if self.train:
-                mint = np.argmin(np.sum(tmp, axis = 1) / condp, axis = 0)
+                tmp2 = np.sum(tmp, axis = 1) / self.actprob # DEBUG
+                mint = np.argmin(tmp2, axis = 0)
                 self.actprob *= 1 - self.lr
                 for i, t in enumerate(mint):
                     self.actprob[t][i] += self.lr
         
+        # DEBUG
+        if self.mark:
+            if self.isBB:
+                tmp = (tmp2)[:, 40]
+                opp = SBr / np.max(SBr)
+            else:
+                tmp = (tmp2)[:, 40]
+                opp = BBr / np.sum(BBr) * 100
+            tmp3 = np.maximum(self.actprob[:, 40], 1e-3)
+            with np.printoptions(precision = 1, suppress = True):
+                print("\nopp =")
+                print(opp)
+            with np.printoptions(precision = 3, suppress = True):
+                print(tmp / (np.max(tmp) if self.isBB else np.min(tmp)), tmp3)
+        '''
+        if self.mark:
+            # print(tmp)
+            print(v)
+            with np.printoptions(precision = 3, suppress = True):
+                print(condp)
+                print(BBr)
+                print(SBr)
+                print(self.actprob)
+                exit()
+                # print((np.sum(tmp, axis = 2) / condp)[:, 40])
+        '''
+
         self.lr *= self.decay
         return v            
 

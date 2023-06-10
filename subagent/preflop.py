@@ -4,26 +4,28 @@ from pre.equireader import Equireader as EQ
 from eqcalc.state import State
 from subagent.newclass import PreRangeProcesser as PRP
 from eqcalc.deep import *
+from subagent.heuristics import *
 from tqdm import tqdm
 from random import random
 from util.shower import Shower
 
 class preflopper():
-    def __init__(self, debug = False):
+    def __init__(self, debug = False, hiru = None):
         self.debug = debug
         self.rp = PRP()
         self.eq = EQ()
+        self.call = PRECALL if hiru is None else hiru
     
     def SB_default(self, cur):
         # a bit deep, but just for testing purpose
         return BLINDS(self.rp, cur, {
             FOLD: None,
             LIMP: {
-                CALL: None,
+                self.call: None,
                 **{
                 RAISE(i, msg = f"R({i})"): {
                     FOLD: None,
-                    CALL: None,
+                    self.call: None,
                     ALLIN: {
                         FOLD: None,
                         CALLIN: None
@@ -37,7 +39,7 @@ class preflopper():
             **{
             RAISE(i, msg = f"R({i})"): {
                 FOLD: None,
-                CALL: None,
+                self.call: None,
                 ALLIN: {
                     FOLD: None,
                     CALLIN: None
@@ -54,11 +56,11 @@ class preflopper():
         return BLINDS(self.rp, cur, {
             FOLD: None,
             LIMP: {
-                CALL: None,
+                self.call: None,
                 **{
                 RAISE(i, msg = f"R({i})"): {
                     FOLD: None,
-                    CALL: None,
+                    self.call: None,
                     ALLIN: {
                         FOLD: None,
                         CALLIN: None
@@ -71,7 +73,7 @@ class preflopper():
             },
             RAISE(rsize): {
                 FOLD: None,
-                CALL: None,
+                self.call: None,
                 ALLIN: {
                     FOLD: None,
                     CALLIN: None
@@ -87,7 +89,7 @@ class preflopper():
         return {
             RAISE(x): {
                 FOLD: None,
-                CALL: None,
+                self.call: None,
                 ALLIN: {
                     FOLD: None,
                     CALLIN: None
@@ -100,7 +102,7 @@ class preflopper():
         actions: signatures, see eqcalc.deep
         ret : signature
         '''
-        if self.debug: print(f"[DEBUG][preflop.py] actions = {actions}")
+        if self.debug: print(f"[DEBUG][preflop.py] {(BBchip, turn)} actions = {actions}")
         
         debug = self.debug
         cur = State(BBchip, turn = turn, equitizer = self.eq)
@@ -109,13 +111,13 @@ class preflopper():
         elif len(actions) == 1:
             self.gt = self.BB_default(cur, actions[0])
         elif len(actions) == 2: # C - R or R - 3B
-            self.gt.lock(depth = 2)
+            self.gt.lock(depth = 1)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
                 gt = self.raisetree(actions[-1])
                 ptr.addChild(gt)
         elif len(actions) == 3: # C - R - 3B
-            self.gt.lock(depth = 3)
+            self.gt.lock(depth = 2)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
                 gt = self.raisetree(actions[-1])
@@ -133,7 +135,20 @@ class preflopper():
         myid = self.rp.h2i(myh)
         prob = ptr.actprob[:, myid]
         if debug:
-            ptr.show()
+            tmp = [c.signature for c in ptr.children]
+            with np.printoptions(precision = 3, suppress = True):
+                print(f"[DEBUG][postflop.act] choosing from {tmp} with p {prob}")
+        if debug:
+            if len(actions) > 0:
+                ptr2 = self.gt.find(*(actions[:-1]))
+                if not ptr2.term:  
+                    print(f"[DEBUG][postflop.act] ptr2.children = {[c.signature for c in ptr2.children]}")
+                    print(f"[DEBUG] opp. range:")
+                    ptr2.show()
+            if not ptr.term: 
+                print(f"[DEBUG][postflop.act] ptr.children = {[c.signature for c in ptr.children]}")
+                print(f"[DEBUG] my range:")
+                ptr.show()
         # TODO: add activation function?
         action = np.random.choice(np.arange(len(prob)), p = prob)
         return ptr.children[action].signature

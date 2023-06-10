@@ -4,26 +4,29 @@ from pre.equireader import Equireader as EQ
 from eqcalc.state import State
 from subagent.newclass import PostRangeProcesser as PRP
 from eqcalc.deep import *
+from subagent.heuristics import *
 from tqdm import tqdm
 from random import random
 from util.shower import Shower
 
 class postflopper():
-    def __init__(self, *args, debug = False, **kwargs):
+    def __init__(self, *args, debug = False, hiru = None, **kwargs):
         # BBr, SBr, comm, BBincl = None, SBincl = None
         self.debug = debug
         self.rp = PRP(*args, **kwargs)
         self.eq = EQ()
+
+        self.call = [FLOPCALL, TURNCALL, RIVERCALL] if hiru is None else hiru
     
-    def SB_default(self, cur, pot):
+    def SB_default(self, cur, pot, street = STREETFLOP):
         # a bit deep, but just for testing purpose
         return POT(pot)(self.rp, cur, {
             CHECK: {
-                CALL: None,
+                self.call[street]: None,
                 **{
                 RAISE(i, msg = f"R({i})"): {
                     FOLD: None,
-                    CALL: None,
+                    self.call[street]: None,
                     ALLIN: {
                         FOLD: None,
                         CALLIN: None
@@ -37,7 +40,7 @@ class postflopper():
             **{
             RAISE(i, msg = f"R({i})"): {
                 FOLD: None,
-                CALL: None,
+                self.call[street]: None,
                 ALLIN: {
                     FOLD: None,
                     CALLIN: None
@@ -49,15 +52,15 @@ class postflopper():
             }
         })
 
-    def BB_default(self, cur, pot, rsize):
-        if rsize == 0 or rsize == 1: return self.SB_default(cur, pot)
+    def BB_default(self, cur, pot, rsize, street = STREETFLOP):
+        if rsize == 0 or rsize == 1: return self.SB_default(cur, pot, street = street)
         return POT(pot)(self.rp, cur, {
             CHECK: {
-                CALL: None,
+                self.call[street]: None,
                 **{
                 RAISE(i, msg = f"R({i})"): {
                     FOLD: None,
-                    CALL: None,
+                    self.call[street]: None,
                     ALLIN: {
                         FOLD: None,
                         CALLIN: None
@@ -70,7 +73,7 @@ class postflopper():
             },
             RAISE(rsize, msg = f"R"): {
                 FOLD: None,
-                CALL: None,
+                self.call[street]: None,
                 ALLIN: {
                     FOLD: None,
                     CALLIN: None
@@ -82,11 +85,11 @@ class postflopper():
             }
         })
 
-    def raisetree(self, x):
+    def raisetree(self, x, street = STREETFLOP):
         return {
-            RAISE(x): {
+            RAISE(x, msg = f"R({x})"): {
                 FOLD: None,
-                CALL: None,
+                self.call[street]: None,
                 ALLIN: {
                     FOLD: None,
                     CALLIN: None
@@ -94,7 +97,7 @@ class postflopper():
             }
         }
 
-    def act(self, BBchip, turn, myh, pot, *actions, nIter = 250):
+    def act(self, BBchip, turn, myh, pot, *actions, street = STREETFLOP, nIter = 250):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature
@@ -102,17 +105,17 @@ class postflopper():
         debug = self.debug
         cur = State(BBchip, turn = turn, equitizer = self.eq)
         if len(actions) == 0:
-            self.gt = self.SB_default(cur, pot)
+            self.gt = self.SB_default(cur, pot, street = street)
         elif len(actions) == 1:
-            self.gt = self.BB_default(cur, pot, actions[0])
+            self.gt = self.BB_default(cur, pot, actions[0], street = street)
         elif len(actions) == 2: # C - R or R - 3B
-            self.gt.lock(depth = 2)
+            self.gt.lock(depth = 1)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
                 gt = self.raisetree(actions[-1])
                 ptr.addChild(gt)
         elif len(actions) == 3: # C - R - 3B
-            self.gt.lock(depth = 3)
+            self.gt.lock(depth = 2)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
                 gt = self.raisetree(actions[-1])
@@ -130,6 +133,16 @@ class postflopper():
         myid = self.rp.h2i(myh, isBB)
         prob = ptr.actprob[:, myid]
         if debug:
+            tmp = [c.signature for c in ptr.children]
+            with np.printoptions(precision = 3, suppress = True):
+                print(f"[DEBUG][postflop.act] choosing from {tmp} with p {prob}")
+        if debug:
+            if len(actions) > 0:
+                print(f"[DEBUG] opp. range:")
+                self.gt.find(*(actions[:-1])).show()
+            if not ptr.term: 
+                print(f"[DEBUG][postflop.act] ptr.children = {[c.signature for c in ptr.children]}")
+            print(f"[DEBUG] my range:")
             ptr.show()
         # TODO: add activation function?
         action = np.random.choice(np.arange(len(prob)), p = prob)

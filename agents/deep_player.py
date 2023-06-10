@@ -5,6 +5,7 @@ from game.engine.card import Card
 from subagent.preflop import preflopper as PRE
 from subagent.postflop import postflopper as POST
 from eqcalc.deep import *
+from subagent.heuristics import *
 from util.shower import Shower
 from pre.equitizer import Equitizer as EQ
 import json
@@ -63,9 +64,10 @@ class MyPlayer(BasePokerPlayer):
             return self.act(action)
         else: # POSTFLOP
             street = round_state['street']
+            streetid = STREETFLOP if street == 'flop' else (STREETTURN if street == 'turn' else STREETRIVER)
             self.actions = self.transform(round_state['action_histories'][street])
             if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
-            action = self.post.act(BBchip, self.turn, self.hand, self.pot, *self.actions)
+            action = self.post.act(BBchip, self.turn, self.hand, self.pot, *self.actions, street = streetid)
             # self.actions.append(action)
             return self.act(action)
 
@@ -117,7 +119,7 @@ class MyPlayer(BasePokerPlayer):
         self.turn = 20 - round_count
         self.allined = False
         self.sleep = False
-        if self.debug: print(f"self.hand = {Shower.h2s(self.hand)}")
+        if self.debug or self.showhand: print(f"[DEBUG] self.hand = {Shower.h2s(self.hand)}")
 
         for pos in range(len(seats)):
             s = seats[pos]
@@ -183,5 +185,5 @@ class MyPlayer(BasePokerPlayer):
         pass
 
 
-def setup_ai(debug = False):
-    return MyPlayer(debug = debug)
+def setup_ai(debug = False, showhand = False):
+    return MyPlayer(debug = debug, showhand = showhand)

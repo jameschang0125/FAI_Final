@@ -92,3 +92,18 @@ def testpreflopper():
     init = PRE.act(1000, 15, myh) # SB
     sseq = PRE.act(1000, 15, myh, init, 65, debug = True) # SB
     print(f"init: {init}, sseq: {sseq}")
+
+def testspec():
+    PRE = preflopper(debug = True)
+    myh = ((3, 14), (3, 8)) # A8s
+    print(f"[TEST] act 1")
+    PRE.act(980, 18, myh)
+
+    print(f"[TEST] act 2")
+    PRE.act(980, 18, myh, 15, 103, nIter = 1) # create node
+
+    #ptr = PRE.gt.find(15, 103)
+    #ptr.mark = True
+    PRE.act(980, 18, myh, 15, 103)
+
+

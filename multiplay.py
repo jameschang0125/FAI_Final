@@ -21,32 +21,45 @@ from baseline3 import setup_ai as baseline3_ai
 from baseline4 import setup_ai as baseline4_ai
 from baseline5 import setup_ai as baseline5_ai
 
-# baseline 4 is ignored for stablility reasons
-ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, call_ai, baseline5_ai, random_ai]
+# ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, call_ai, random_ai]
+ais = [baseline5_ai]
 
-def play(id, **kwargs):
-    config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
-    my = deep_ai(**kwargs)
-    if random() < 0.5:
-        config.register_player(name = "p1", algorithm = my)
-        config.register_player(name = "p2", algorithm = ais[id]())
-        switched = False
-    else:
-        config.register_player(name = "p2", algorithm = ais[id]())
-        config.register_player(name = "p1", algorithm = my)
-        switched = True
+def play(id, verbose = 0, **kwargs):
+    try:
+        config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
+        my = deep_ai(**kwargs)
+        if random() < 0.5:
+            config.register_player(name = "p1", algorithm = my)
+            config.register_player(name = "p2", algorithm = ais[id]())
+            switched = False
+        else:
+            config.register_player(name = "p2", algorithm = ais[id]())
+            config.register_player(name = "p1", algorithm = my)
+            switched = True
 
-    res = start_poker(config, verbose = 0)
-    x, y = res["players"][0]["stack"], res["players"][1]["stack"]
+        res = start_poker(config, verbose = verbose)
+        x, y = res["players"][0]["stack"], res["players"][1]["stack"]
 
-    tmp = 1 if x > y else (0 if x < y else 0.5)
-    return 1 - tmp if switched else tmp
+        tmp = 1 if x > y else (0 if x < y else 0.5)
+        return 1 - tmp if switched else tmp
+    except Exception as e:
+        print(e)
+        return None
 
 if __name__ == '__main__':
     N = 200
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40, chunksize = 1)
-        p = np.sum(r) / N
-        stderr = (p * (1 - p) / N) ** 0.5
-        print(f"p1 winrate = {'%.4f'%p} ± {'%.4f'%(stderr * 1.96)}")
+        
+        errcnt, cnt, wins = 0, 0, 0
+        for i in r:
+            if i is None:
+                errcnt += 1
+            else:
+                wins += i
+                cnt += 1
+
+        p = wins / cnt
+        stderr = (p * (1 - p) / cnt) ** 0.5
+        print(f"[RESULT] winrate = {'%.4f'%p} ± {'%.4f'%(stderr * 1.96)}, errrate = {'%.4f'%(errcnt/N)}")
