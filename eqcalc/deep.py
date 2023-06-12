@@ -267,6 +267,13 @@ CHECK = RAISE(x = 0, msg = "C")
 LIMP = RAISE(x = 10, msg = "C")
 ALLIN = RAISE(msg = "A") # signature 1
 
+ALLINTREE = {
+    ALLIN: {
+        FOLD: None,
+        CALLIN: None
+    }
+}
+
 # constructors
 class BLINDS(ROOT):
     def __init__(self, rp, state, ct, **kwargs):

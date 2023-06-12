@@ -15,6 +15,39 @@ class preflopper():
         self.rp = PRP()
         self.eq = EQ()
         self.call = PRECALL if hiru is None else hiru
+
+    def RTREE(self, x):
+        return {
+            RAISE(x, msg = f"R({x})"): {
+                FOLD: None,
+                self.call: None,
+                **ALLINTREE
+            }
+        }
+    
+    def RTREE2(self, x):
+        if 4 * x < 150:
+            return {
+                RAISE(x, msg = f"R({x})"): {
+                    FOLD: None,
+                    self.call: None,
+                    **self.RTREE(3 * x),
+                    **self.RTREE(4 * x),
+                    **ALLINTREE
+                }
+            }
+        if 3 * x < 150:
+            return {
+                RAISE(x, msg = f"R({x})"): {
+                    FOLD: None,
+                    self.call: None,
+                    **self.RTREE(2 * x),
+                    **self.RTREE(3 * x),
+                    **ALLINTREE
+                }
+            }
+        return self.RTREE(x)
+
     
     def SB_default(self, cur):
         # a bit deep, but just for testing purpose
@@ -22,33 +55,11 @@ class preflopper():
             FOLD: None,
             LIMP: {
                 self.call: None,
-                **{
-                RAISE(i, msg = f"R({i})"): {
-                    FOLD: None,
-                    self.call: None,
-                    ALLIN: {
-                        FOLD: None,
-                        CALLIN: None
-                    }
-                } for i in range(15, 36, 5)},
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
+                **{self.RTREE2(i) for i in range(15, 36, 5)},
+                **ALLINTREE
             },
-            **{
-            RAISE(i, msg = f"R({i})"): {
-                FOLD: None,
-                self.call: None,
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            } for i in range(15, 36, 5)},
-            ALLIN: {
-                FOLD: None,
-                CALLIN: None
-            }
+            **{self.RTREE2(i) for i in range(15, 36, 5)},
+            **ALLINTREE
         })
 
     def BB_default(self, cur, rsize):
@@ -57,45 +68,12 @@ class preflopper():
             FOLD: None,
             LIMP: {
                 self.call: None,
-                **{
-                RAISE(i, msg = f"R({i})"): {
-                    FOLD: None,
-                    self.call: None,
-                    ALLIN: {
-                        FOLD: None,
-                        CALLIN: None
-                    }
-                } for i in range(15, 36, 5)},
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
+                **{self.RTREE2(i) for i in range(15, 36, 5)},
+                **ALLINTREE
             },
-            RAISE(rsize): {
-                FOLD: None,
-                self.call: None,
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            },
-            ALLIN: {
-                FOLD: None,
-                CALLIN: None
-            }
+            self.RTREE2(rsize),
+            **ALLINTREE
         })
-
-    def raisetree(self, x):
-        return {
-            RAISE(x): {
-                FOLD: None,
-                self.call: None,
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            }
-        }
 
     def act(self, BBchip, turn, myh, *actions, nIter = 250):
         '''
@@ -114,13 +92,13 @@ class preflopper():
             self.gt.lock(depth = 1)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
-                gt = self.raisetree(actions[-1])
+                gt = self.RTREE(actions[-1])
                 ptr.addChild(gt)
         elif len(actions) == 3: # C - R - 3B
             self.gt.lock(depth = 2)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
-                gt = self.raisetree(actions[-1])
+                gt = self.RTREE(actions[-1])
                 ptr.addChild(gt)
         else:
             raise RuntimeError
