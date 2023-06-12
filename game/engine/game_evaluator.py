@@ -1,3 +1,4 @@
+import math
 from functools import reduce
 from itertools import groupby
 
@@ -30,6 +31,8 @@ class GameEvaluator:
         prize_map = self.__create_prize_map(len(players))
         pots = self.create_pot(players)
         for pot in pots:
+            # for player in pot['eligibles']:
+            #     print(f'eligible player: {player.name}')
             winners = self.__find_winners_from(community_card, pot["eligibles"])
             prize = int(pot["amount"] / len(winners))
             for winner in winners:
@@ -46,6 +49,14 @@ class GameEvaluator:
 
     @classmethod
     def __find_winners_from(self, community_card, players):
+        # print(f"Num of players = {len(players)}")
+        # for player in players:
+            # print(f"{player.name} have {player.hole_card[0].__str__()},{player.hole_card[1].__str__()}")
+            # print(f"{player.name}\'s pay info {player.pay_info.status}")
+            # print(f"{player.name}\'s pay info amount{player.pay_info.amount}")
+            # print(f"{player.name}\'s action history: {player.action_histories}")
+            # print(f"{player.name}\'s round action history: {player.round_action_histories}")
+            #
         score_player = lambda player: HandEvaluator.eval_hand(
             player.hole_card, community_card
         )
@@ -75,11 +86,14 @@ class GameEvaluator:
     @classmethod
     def __get_main_pot(self, players, sidepots):
         max_pay = max([pay.amount for pay in self.__get_payinfo(players)])
+        # print(max_pay)
+        # for player in players:
+        #     print(f"Player :{player.name} have {player.pay_info.amount} pay")
         return {
             "amount": self.__get_players_pay_sum(players)
             - self.__get_sidepots_sum(sidepots),
             "eligibles": [
-                player for player in players if player.pay_info.amount == max_pay
+                player for player in players if math.isclose(player.pay_info.amount,max_pay)
             ],
         }
 
@@ -126,6 +140,8 @@ class GameEvaluator:
 
     @classmethod
     def __is_eligible(self, player, allin_amount):
+        if math.isclose(player.pay_info.amount, allin_amount):
+            allin_amount = player.pay_info.amount
         return (
             player.pay_info.amount >= allin_amount
             and player.pay_info.status != PayInfo.FOLDED
