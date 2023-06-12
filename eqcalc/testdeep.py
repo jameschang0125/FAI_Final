@@ -100,8 +100,7 @@ def testspec():
     PRE.act(980, 18, myh)
 
     print(f"[TEST] act 2")
-    PRE.act(980, 18, myh, 15, 103, nIter = 1) # create node
-
+    # PRE.act(980, 18, myh, 15, 103, nIter = 1) # create node
     #ptr = PRE.gt.find(15, 103)
     #ptr.mark = True
     PRE.act(980, 18, myh, 15, 103)

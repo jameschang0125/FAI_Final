@@ -8,6 +8,7 @@ from subagent.heuristics import *
 from tqdm import tqdm
 from random import random
 from util.shower import Shower
+from collections import ChainMap # aggregate dict
 
 class preflopper():
     def __init__(self, debug = False, hiru = None):
@@ -48,6 +49,8 @@ class preflopper():
             }
         return self.RTREE(x)
 
+    def RTREE3(self, xs):
+        return ChainMap(*[self.RTREE2(x) for x in xs])
     
     def SB_default(self, cur):
         # a bit deep, but just for testing purpose
@@ -55,10 +58,10 @@ class preflopper():
             FOLD: None,
             LIMP: {
                 self.call: None,
-                **{self.RTREE2(i) for i in range(15, 36, 5)},
+                **self.RTREE3(range(15, 36, 5)),
                 **ALLINTREE
             },
-            **{self.RTREE2(i) for i in range(15, 36, 5)},
+            **self.RTREE3(range(15, 36, 5)),
             **ALLINTREE
         })
 
@@ -68,10 +71,10 @@ class preflopper():
             FOLD: None,
             LIMP: {
                 self.call: None,
-                **{self.RTREE2(i) for i in range(15, 36, 5)},
+                **self.RTREE3(range(15, 36, 5)),
                 **ALLINTREE
             },
-            self.RTREE2(rsize),
+            **self.RTREE2(rsize),
             **ALLINTREE
         })
 
@@ -88,20 +91,12 @@ class preflopper():
             self.gt = self.SB_default(cur)
         elif len(actions) == 1:
             self.gt = self.BB_default(cur, actions[0])
-        elif len(actions) == 2: # C - R or R - 3B
-            self.gt.lock(depth = 1)
-            if self.gt.find(*actions) is None:
-                ptr = self.gt.find(*(actions[:-1]))
-                gt = self.RTREE(actions[-1])
-                ptr.addChild(gt)
-        elif len(actions) == 3: # C - R - 3B
-            self.gt.lock(depth = 2)
-            if self.gt.find(*actions) is None:
-                ptr = self.gt.find(*(actions[:-1]))
-                gt = self.RTREE(actions[-1])
-                ptr.addChild(gt)
         else:
-            raise RuntimeError
+            self.gt.lock(depth = len(actions) - 1)
+            if self.gt.find(*actions) is None:
+                ptr = self.gt.find(*(actions[:-1]))
+                gt = self.RTREE2(actions[-1])
+                ptr.addChild(gt)
         
         self.gt.reset()
         loader = tqdm(range(nIter)) if debug else range(nIter)
