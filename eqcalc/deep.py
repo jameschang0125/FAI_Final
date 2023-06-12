@@ -115,18 +115,36 @@ class GameTree():
         
         # DEBUG
         if self.mark:
+            for i, c in enumerate(self.children):
+                print(f"[SIG] {c.signature}")
+                if self.isBB: 
+                    tmp4 = tmp[i][0] / (condp[i][0] * SBr * self.rp.fq[0])
+                else: 
+                    tmp4 = tmp[i][:, 0] / (condp[i][0] * BBr * self.rp.fq[0])
+                with np.printoptions(precision = 3, suppress = True):
+                    print(tmp4)
+            
             if self.isBB:
-                tmp = (tmp2)[:, 40]
-                opp = SBr / np.max(SBr)
+                tmp = ((tmp2)[:, 0] / BBr[0]) / np.sum(self.rp.fq[0] * SBr)
+                opp = SBr / np.sum(SBr) * 100
             else:
-                tmp = (tmp2)[:, 40]
-                opp = BBr / np.max(BBr)
-            tmp3 = np.maximum(self.actprob[:, 40], 1e-3)
-            #with np.printoptions(precision = 1, suppress = True):
-            #    print("\nopp =")
-            #    print(opp)
+                tmp = ((tmp2)[:, 0] / SBr[0]) / np.sum(self.rp.fq[0] * BBr)
+                opp = BBr / np.sum(BBr) * 100
+            tmp3 = np.maximum(self.actprob[:, 0], 1e-3)
+
+            ptr = self.find(1)
+            for i, c in enumerate(ptr.children):
+                if c.signature == -2: # SIGCALLIN
+                    with np.printoptions(precision = 0, suppress = True):
+                        print(f"CALLIN p = \n{ptr.actprob[i] * 100}")
+                    break
+
+            with np.printoptions(precision = 0, suppress = True):
+                print("\nopp =")
+                print(opp)
             with np.printoptions(precision = 3, suppress = True):
                 print(tmp / (np.max(tmp) if self.isBB else np.min(tmp)), tmp3)
+            print(tmp)
         '''
         if self.mark:
             # print(tmp)
