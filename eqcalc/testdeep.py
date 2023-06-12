@@ -94,15 +94,15 @@ def testpreflopper():
     print(f"init: {init}, sseq: {sseq}")
 
 def testspec():
-    PRE = preflopper(debug = True)
-    myh = ((3, 14), (3, 8)) # A8s
+    PRE = preflopper()
+    myh = ((3, 14), (3, 8)) # A8o
     print(f"[TEST] act 1")
     PRE.act(980, 18, myh)
 
     print(f"[TEST] act 2")
-    # PRE.act(980, 18, myh, 15, 103, nIter = 1) # create node
-    #ptr = PRE.gt.find(15, 103)
-    #ptr.mark = True
+    PRE.act(980, 18, myh, 15, 103, nIter = 1) # create node
+    ptr = PRE.gt.find(15, 103)
+    ptr.mark = True
     PRE.act(980, 18, myh, 15, 103)
 
 

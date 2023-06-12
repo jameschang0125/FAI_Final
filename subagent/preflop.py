@@ -87,16 +87,20 @@ class preflopper():
         
         debug = self.debug
         cur = State(BBchip, turn = turn, equitizer = self.eq)
-        if len(actions) == 0:
-            self.gt = self.SB_default(cur)
-        elif len(actions) == 1:
-            self.gt = self.BB_default(cur, actions[0])
-        else:
+        if len(actions) >= 2:
             self.gt.lock(depth = len(actions) - 1)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
                 gt = self.RTREE2(actions[-1])
                 ptr.addChild(gt)
+        elif hasattr(self, 'gt'):
+            pass
+        elif len(actions) == 0:
+            self.gt = self.SB_default(cur)
+        elif len(actions) == 1:
+            self.gt = self.BB_default(cur, actions[0])
+        else:
+            raise ValueError("[PREFLOP] called w/o gt!")
         
         self.gt.reset()
         loader = tqdm(range(nIter)) if debug else range(nIter)

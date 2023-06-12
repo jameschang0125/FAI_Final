@@ -4,7 +4,7 @@ import numpy as np
 # positive signature are reserved for raise
 SIGGT = -1
 class GameTree():
-    def __init__(self, lr = 0.9, decay = 0.98, **kwargs):
+    def __init__(self, lr = 0.3, decay = 0.98, **kwargs):
         '''
         [IDEA] lower decay for deeper nodes
         '''
@@ -44,7 +44,7 @@ class GameTree():
             for c in self.children:
                 c.lock(depth - 1)
     
-    def reset(self, lr = 0.9):
+    def reset(self, lr = 0.3):
         self.lr = lr
         for c in self.children:
             c.reset(lr)
@@ -83,6 +83,9 @@ class GameTree():
         raise ValueError(f"couldn't find signatures {signatures} within {poss}!")
 
     def update(self, BBr, SBr):
+        return self._update(BBr, SBr)
+
+    def _update(self, BBr, SBr):
         '''
         update: actprob
         return: EV, (BBh, SBh) shaped ndarray
@@ -117,11 +120,11 @@ class GameTree():
                 opp = SBr / np.max(SBr)
             else:
                 tmp = (tmp2)[:, 40]
-                opp = BBr / np.sum(BBr) * 100
+                opp = BBr / np.max(BBr)
             tmp3 = np.maximum(self.actprob[:, 40], 1e-3)
-            with np.printoptions(precision = 1, suppress = True):
-                print("\nopp =")
-                print(opp)
+            #with np.printoptions(precision = 1, suppress = True):
+            #    print("\nopp =")
+            #    print(opp)
             with np.printoptions(precision = 3, suppress = True):
                 print(tmp / (np.max(tmp) if self.isBB else np.min(tmp)), tmp3)
         '''
@@ -154,10 +157,10 @@ class GameTree():
             else: prefix = msg + " - "
             with np.printoptions(precision = 3, suppress = True):
                 for i, c in enumerate(self.children):
-                    if suppress and np.sum(self.actprob[i]) > eps:
+                    if (not suppress) or np.sum(self.actprob[i]) > eps:
                         print(prefix + c.msg, self.actprob[i], sep = '\n')
-            for c in self.children:
-                if suppress and np.sum(self.actprob[i]) > eps:
+            for i, c in enumerate(self.children):
+                if (not suppress) or np.sum(self.actprob[i]) > eps:
                     c.show(prefix + c.msg)
 
 SIGROOT = -1
@@ -169,30 +172,9 @@ class ROOT(GameTree):
         self.signature = 0
         n, m = self.rp.nHands(BB = True), self.rp.nHands(BB = False)
         self.BBr, self.SBr = np.ones(n), np.ones(m)
-
+    
     def update(self):
-        '''
-        update: actprob
-        return: EV, (BBh, SBh) shaped ndarray
-        
-        for terminal nodes, just simply overwrite this function
-        '''
-        if self.isBB:
-            condp = self.actprob
-            tmp = np.array([c.update(condp[i], self.SBr) for i, c in enumerate(self.children)])
-            maxt = np.argmax(np.sum(tmp, axis = 2) / condp, axis = 0)
-            self.actprob *= 1 - self.lr
-            for i, t in enumerate(maxt):
-                self.actprob[t][i] += self.lr
-        else:
-            condp = self.actprob
-            tmp = np.array([c.update(self.BBr, condp[i]) for i, c in enumerate(self.children)])
-            mint = np.argmin(np.sum(tmp, axis = 1) / condp, axis = 0)
-            self.actprob *= 1 - self.lr
-            for i, t in enumerate(mint):
-                self.actprob[t][i] += self.lr
-        
-        self.lr *= self.decay
+        tmp = self._update(self.BBr, self.SBr)
         return np.sum(tmp)           
 
 class InheritGT(GameTree):
