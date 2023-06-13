@@ -169,7 +169,7 @@ class GameTree():
         return (self.signature, tuple(c.getTree() for c in self.children))
 
     def show(self, msg = None, suppress = True):
-        eps = 1e-3
+        eps = 0.1
         if not self.term:
             if msg is None: prefix = ""
             else: prefix = msg + " - "

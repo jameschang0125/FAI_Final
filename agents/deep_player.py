@@ -125,9 +125,9 @@ class MyPlayer(BasePokerPlayer):
             s = seats[pos]
             if s["uuid"] == self.uuid:
                 self.pos = pos
-                self.my = s["stack"]
+                self.my = s["stack"] + (10 if self.isBB else 5)
             else:
-                self.opp = s["stack"]
+                self.opp = s["stack"] + (5 if self.isBB else 10)
         
         if self.debug: print(f"[DEBUG][player.roundstart] {self.my} vs {self.opp}")
 

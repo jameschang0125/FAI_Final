@@ -94,12 +94,12 @@ def testpreflopper():
     print(f"init: {init}, sseq: {sseq}")
 
 def testspec():
-    PRE = preflopper()
-    myh = ((3, 14), (2, 14)) # A8o
+    PRE = preflopper(debug = True)
+    myh = ((3, 2), (2, 7)) # A8o
     print(f"[TEST] act 1")
-    PRE.act(960, 18, myh)
-    PRE.gt.find(15, 60).mark = True
-    PRE.act(960, 18, myh, 15, 60)
+    PRE.act(1013, 3, myh)
+    # PRE.gt.find(15, 60).mark = True
+    # PRE.act(960, 18, myh, 15, 60)
 
     '''
     print(f"[TEST] act 2")

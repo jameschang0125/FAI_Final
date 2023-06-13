@@ -20,8 +20,8 @@ from baseline4 import setup_ai as baseline4_ai
 # from baseline5 import setup_ai as baseline5_ai
 
 config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
-config.register_player(name = "p1", algorithm = my_ai()) # deep_ai(showhand = True))
-config.register_player(name = "p2", algorithm = deep_ai())#console_ai())
+config.register_player(name = "p1", algorithm = call_ai()) # deep_ai(showhand = True))
+config.register_player(name = "p2", algorithm = call_ai())#console_ai())
 
 ## Play in interactive mode if uncomment
 #config.register_player(name="me", algorithm=console_ai())
