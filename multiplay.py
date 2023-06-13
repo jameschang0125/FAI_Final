@@ -1,5 +1,6 @@
 from tqdm.contrib.concurrent import process_map  # or thread_map
 import time
+import sys
 
 import json
 from game.game import setup_config, start_poker
@@ -21,30 +22,34 @@ from baseline3 import setup_ai as baseline3_ai
 from baseline4 import setup_ai as baseline4_ai
 from baseline5 import setup_ai as baseline5_ai
 
-# ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, call_ai, random_ai]
+# ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, my_ai, call_ai, random_ai]
 ais = [baseline5_ai]
 
 def play(id, verbose = 0, **kwargs):
-    try:
-        config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
-        my = deep_ai(**kwargs)
-        if random() < 0.5:
-            config.register_player(name = "p1", algorithm = my)
-            config.register_player(name = "p2", algorithm = ais[id]())
-            switched = False
-        else:
-            config.register_player(name = "p2", algorithm = ais[id]())
-            config.register_player(name = "p1", algorithm = my)
-            switched = True
+    
+    with open(f"tmp/log/{id}", "w") as sys.stdout:
+        try:
+            config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
+            my = deep_ai(**kwargs)
+            if random() < 0.5:
+                config.register_player(name = "p1", algorithm = my)
+                config.register_player(name = "p2", algorithm = ais[id]())
+                switched = False
+            else:
+                config.register_player(name = "p2", algorithm = ais[id]())
+                config.register_player(name = "p1", algorithm = my)
+                switched = True
 
-        res = start_poker(config, verbose = verbose)
-        x, y = res["players"][0]["stack"], res["players"][1]["stack"]
-
-        tmp = 1 if x > y else (0 if x < y else 0.5)
-        return 1 - tmp if switched else tmp
-    except Exception as e:
-        print(e)
-        return None
+            res = start_poker(config, verbose = 1)
+            x, y = res["players"][0]["stack"], res["players"][1]["stack"]
+            
+            sys.stdout.flush()
+            tmp = 1 if x > y else (0 if x < y else 0.5)
+            return 1 - tmp if switched else tmp
+        except Exception as e:
+            print(f"[SWITCH = {switched}][# {i}] {repr(e)}")
+            sys.stdout.flush()
+            return None
 
 if __name__ == '__main__':
     N = 200
