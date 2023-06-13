@@ -95,9 +95,9 @@ def testpreflopper():
 
 def testspec():
     PRE = preflopper(debug = True)
-    myh = ((3, 2), (2, 7)) # A8o
+    myh = ((3, 2), (2, 7)) # 27o
     print(f"[TEST] act 1")
-    PRE.act(1013, 3, myh)
+    PRE.act(1003, 3, myh)
     # PRE.gt.find(15, 60).mark = True
     # PRE.act(960, 18, myh, 15, 60)
 

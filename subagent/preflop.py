@@ -16,7 +16,7 @@ class preflopper():
         self.rp = PRP()
         self.eq = EQ()
         self.call = PRECALL if hiru is None else hiru
-
+    
     def RTREE(self, x):
         return {
             RAISE(x, msg = f"R({x})"): {

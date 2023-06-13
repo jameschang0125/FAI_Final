@@ -3,6 +3,7 @@ from pre.range_preprocesser import RangePreProcesser as RPP
 from eqcalc.test import testrs, testAoF
 from pre.equitizer import Equitizer as EZ
 from pre.equireader import Equireader as EQ
+from pre.deepequitizer import DeepEquitizer as DEZ
 from pre.test import testrp
 from pre.test import testrs as testrs2
 
@@ -16,7 +17,8 @@ from pre.test import testrs as testrs2
 
 # testAoF()
 
-EZ().gen()
+# EZ().gen()
+DEZ().gen()
 #eq = EQ()
 #for i in range(850, 1150, 10):
 #    print(f"wr({i}): {eq.wr(18, i)}")

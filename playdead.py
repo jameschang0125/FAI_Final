@@ -5,7 +5,8 @@ import sys
 
 N = 200
 win, lose, tie, error = [], [], [], []
-for i in tqdm(range(N)):
+for i in range(N):
+    print(f"[ITER] {i} ::", file = sys.stderr)
     with open(f"tmp/log/{i}", "w") as sys.stdout:
         res = play(randint(0, len(ais) - 1), verbose = 1, debug = True)
         sys.stdout.flush()

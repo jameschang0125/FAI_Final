@@ -7,7 +7,7 @@ from eqcalc.deep import *
 from subagent.heuristics import *
 from subagent.newclass import PreRangeProcesser as PRP
 
-class Equitizer():
+class DeepEquitizer():
     '''
     equity calculator
     '''
@@ -17,8 +17,7 @@ class Equitizer():
 
     def __init__(self):
         self.eq = np.zeros((21, self.size * 2 + 1)) # turn left, BB.chips (BEFORE paying BB) - 860
-        self.BBr = np.zeros((21, self.size * 2 + 1, self.nHands))
-        self.SBr = np.zeros((21, self.size * 2 + 1, self.nHands))
+        self.gto = [None for _ in range(21)]
 
     @classmethod
     def __thre(self, turn, isBB):
@@ -47,8 +46,8 @@ class Equitizer():
 
     def _calc(self, turn, x):
         y = self.__win(turn, x)
-        if y == 0: return y, None, None
-        if y == 1: return y, None, None
+        if y == 0: return y, None
+        if y == 1: return y, None
 
         nIter, decay = 700, 0.99
 
@@ -108,7 +107,7 @@ class Equitizer():
             v = gt.update()
         return v, gt
 
-    def __gen(self, turn, workers = 70, **kwargs):
+    def __gen(self, turn, workers = 40, **kwargs):
         '''
         Suppose (turn - 1) is calculated
         '''
@@ -120,17 +119,27 @@ class Equitizer():
 
         ## TODO: thing below this is not done
         # accelerate for prevent repeat calc
-        work = []
-        for i in np.arange(self.size * 2 + 1):
-            if i % 5 <= 1:
-                work.append(i)
+        work = np.arange(self.size * 2 + 1).tolist()
 
-        calc = partialmethod(self._AoFcalc, turn).__get__(self)
+        calc = partialmethod(self._calc, turn).__get__(self)
         ret = process_map(calc, work, max_workers = workers, chunksize = 1)
 
-        # print(ret[0])
-        for i, x in enumerate(work):
-            self.eq[turn][x], self.BBr[turn][x], self.SBr[turn][x] = ret[i]
-            if x % 5 == 1:
-                for y in range(x + 1, x + 4):
-                    self.eq[turn][y], self.BBr[turn][y], self.SBr[turn][y] = ret[i]
+        self.gto[turn] = [r[1] for r in ret]
+        self.eq[turn] = [r[0] for r in ret]
+
+    def gen(self, eqpath = "pre/res/Deepeq.pickle"
+                , gtpath = "pre/res/gto.pickle"
+                , **kwargs):
+        for i in range(21):
+            print(f"[PROGRESS] equitizer.__gen({i})")
+            self.__gen(i, **kwargs)
+
+        if eqpath is not None:
+            with open(eqpath, 'wb') as f:
+                pickle.dump(self.eq, f)
+
+        if gtpath is not None:
+            with open(gtpath, 'wb') as f:
+                pickle.dump(self.gto, f)
+        
+
