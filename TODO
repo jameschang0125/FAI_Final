@@ -1,5 +1,9 @@
 TASKS [IMPROTANCE]
 
+- enlarge BB_default
+- change postflop heuristics
+
+
 BLINDS(
     FOLD(
         ...

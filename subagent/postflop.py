@@ -8,6 +8,7 @@ from subagent.heuristics import *
 from tqdm import tqdm
 from random import random
 from util.shower import Shower
+from collections import ChainMap # aggregate dict
 
 class postflopper():
     def __init__(self, *args, debug = False, hiru = None, **kwargs):
@@ -18,84 +19,73 @@ class postflopper():
 
         self.call = [FLOPCALL, TURNCALL, RIVERCALL] if hiru is None else hiru
     
-    def SB_default(self, cur, pot, street = STREETFLOP):
-        # a bit deep, but just for testing purpose
-        return POT(pot)(self.rp, cur, {
-            CHECK: {
-                self.call[street]: None,
-                **{
-                RAISE(i, msg = f"R({i})"): {
-                    FOLD: None,
-                    self.call[street]: None,
-                    ALLIN: {
-                        FOLD: None,
-                        CALLIN: None
-                    }
-                } for i in range(10, 71, 5)},
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            },
-            **{
-            RAISE(i, msg = f"R({i})"): {
-                FOLD: None,
-                self.call[street]: None,
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            } for i in range(10, 71, 5)},
-            ALLIN: {
-                FOLD: None,
-                CALLIN: None
-            }
-        })
-
-    def BB_default(self, cur, pot, rsize, street = STREETFLOP):
-        if rsize == 0 or rsize == 1: return self.SB_default(cur, pot, street = street)
-        return POT(pot)(self.rp, cur, {
-            CHECK: {
-                self.call[street]: None,
-                **{
-                RAISE(i, msg = f"R({i})"): {
-                    FOLD: None,
-                    self.call[street]: None,
-                    ALLIN: {
-                        FOLD: None,
-                        CALLIN: None
-                    }
-                } for i in range(10, 71, 5)},
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            },
-            RAISE(rsize, msg = f"R"): {
-                FOLD: None,
-                self.call[street]: None,
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
-            },
-            ALLIN: {
-                FOLD: None,
-                CALLIN: None
-            }
-        })
-
-    def raisetree(self, x, street = STREETFLOP):
+    def RTREE(self, x, street = STREETFLOP, BB = False):
+        if x + self.pot / 2 > self.cur.thre(BB = BB): return ALLINTREE
         return {
             RAISE(x, msg = f"R({x})"): {
                 FOLD: None,
                 self.call[street]: None,
-                ALLIN: {
-                    FOLD: None,
-                    CALLIN: None
-                }
+                **ALLINTREE
             }
         }
+    
+    def RTREE2(self, x, street = STREETFLOP, BB = False):
+        if 4 * x + self.pot / 2 <= self.cur.thre(BB = BB):
+            return {
+                RAISE(x, msg = f"R({x})"): {
+                    FOLD: None,
+                    self.call[street]: None,
+                    **self.RTREE(3 * x, street = street, BB = not BB),
+                    **self.RTREE(4 * x, street = street, BB = not BB),
+                    **ALLINTREE
+                }
+            }
+        if 3 * x + self.pot / 2 <= self.cur.thre(BB = BB):
+            return {
+                RAISE(x, msg = f"R({x})"): {
+                    FOLD: None,
+                    self.call[street]: None,
+                    **self.RTREE(2 * x, street = street, BB = not BB),
+                    **self.RTREE(3 * x, street = street, BB = not BB),
+                    **ALLINTREE
+                }
+            }
+        return self.RTREE(x, BB = BB)
+
+    def RTREE3(self, xs, street = STREETFLOP, BB = False):
+        return ChainMap(*[self.RTREE2(x, street, BB) for x in xs])
+
+    def SB_default(self, cur, pot, street = STREETFLOP):
+        # a bit deep, but just for testing purpose
+        return POT(pot)(self.rp, self.nxt, {
+            CHECK: {
+                self.call[street]: None,
+                **self.RTREE3(range(10, min(61, cur.thre(BB = True) + 1 - int(pot / 2)), 5), street, BB = True),
+                **ALLINTREE
+            },
+            **self.RTREE3(range(10, min(61, cur.thre(BB = False) + 1 - int(pot / 2)), 5), street, BB = False),
+            **ALLINTREE
+        })
+
+    def BB_default(self, cur, pot, rsize, street = STREETFLOP):
+        if rsize == 0 or rsize == 1 or rsize + pot / 2 > cur.thre(BB = False): 
+            return self.SB_default(cur, pot, street = street)
+        return POT(pot)(self.rp, self.nxt, {
+            CHECK: {
+                self.call[street]: None,
+                **self.RTREE3(range(10, min(61, cur.thre(BB = True) + 1 - int(pot / 2)), 5), street, BB = True),
+                **ALLINTREE
+            },
+            **self.RTREE2(rsize, street, BB = False),
+            **ALLINTREE
+        })
+
+    def transform(self, xs, cur, pot):
+        ans, BB = [], False
+        for x in xs:
+            ans.append(x if x + pot / 2 <= cur.thre(BB = BB) else 1)
+            BB = not BB
+        return ans
 
     def act(self, BBchip, turn, myh, pot, *actions, street = STREETFLOP, nIter = 250):
         '''
@@ -104,39 +94,35 @@ class postflopper():
         '''
         debug = self.debug
         cur = State(BBchip, turn = turn, equitizer = self.eq)
+        self.cur, self.nxt, self.pot = cur, cur.to(), pot
+        actions = self.transform(actions, cur, pot)
+        isBB = len(actions) % 2 == 1
+
         if len(actions) == 0:
             self.gt = self.SB_default(cur, pot, street = street)
         elif len(actions) == 1:
             self.gt = self.BB_default(cur, pot, actions[0], street = street)
-        elif len(actions) == 2: # C - R or R - 3B
-            self.gt.lock(depth = 1)
-            if self.gt.find(*actions) is None:
-                ptr = self.gt.find(*(actions[:-1]))
-                gt = self.raisetree(actions[-1])
-                ptr.addChild(gt)
-        elif len(actions) == 3: # C - R - 3B
-            self.gt.lock(depth = 2)
-            if self.gt.find(*actions) is None:
-                ptr = self.gt.find(*(actions[:-1]))
-                gt = self.raisetree(actions[-1])
-                ptr.addChild(gt)
         else:
-            raise RuntimeError
+            self.gt.lock(depth = len(actions) - 1)
+            if self.gt.find(*actions) is None:
+                ptr = self.gt.find(*(actions[:-1]))
+                gt = self.RTREE2(actions[-1], BB = not isBB)
+                ptr.addChild(gt)
         
         self.gt.reset()
         loader = tqdm(range(nIter)) if debug else range(nIter)
         for i in loader:
             self.gt.update()
-        
         ptr = self.gt.find(*actions)
-        isBB = len(actions) % 2 == 1
+        
+        # print(self.rp.SB2i.keys())
         myid = self.rp.h2i(myh, isBB)
         prob = ptr.actprob[:, myid]
+        
         if debug:
             tmp = [c.signature for c in ptr.children]
             with np.printoptions(precision = 3, suppress = True):
                 print(f"[DEBUG][postflop.act] choosing from {tmp} with p {prob}")
-        if debug:
             if len(actions) > 0:
                 print(f"[DEBUG] opp. range:")
                 self.gt.find(*(actions[:-1])).show()
@@ -144,6 +130,7 @@ class postflopper():
                 print(f"[DEBUG][postflop.act] ptr.children = {[c.signature for c in ptr.children]}")
             print(f"[DEBUG] my range:")
             ptr.show()
+        
         # TODO: add activation function?
         action = np.random.choice(np.arange(len(prob)), p = prob)
         return ptr.children[action].signature
@@ -171,6 +158,7 @@ class postflopper():
         '''
         given an action line, output (could be a sample) of BBr, SBr
         '''
+        actions = self.transform(actions, self.cur, self.pot)
         if self.debug: print(f"[DEBUG][postflop.ranges] actions = {actions}")
         BBp, SBp = self.gt.condprob(*actions)
         BBp, SBp = self.norm(BBp), self.norm(SBp)

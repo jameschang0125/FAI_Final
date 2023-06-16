@@ -35,6 +35,8 @@ class MyPlayer(BasePokerPlayer):
         self.s2suit = {s: i for i, s in enumerate(list("CDHS"))}
         self.s2rank = {s: i + 2 for i, s in enumerate(list("23456789TJQKA"))}
 
+        self.ignoreTL = True
+
     def declare_action(self, valid_actions, hole_card, round_state):
         self.valids = valid_actions
         

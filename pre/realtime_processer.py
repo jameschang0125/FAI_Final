@@ -22,10 +22,10 @@ class RealtimeProcesser(RangeProcesser):
         bbh, sbh = min(len(BBr), rsSize), min(len(SBr), rsSize)
         BBr = sample(BBr, bbh)
         SBr = sample(SBr, sbh)
-        if BBincl and BBincl not in BBr: BBr[-1] = BBincl
-        if SBincl and SBincl not in SBr: SBr[-1] = SBincl
+        if (BBincl is not None) and (BBincl not in BBr): BBr[-1] = BBincl
+        if (SBincl is not None) and (SBincl not in SBr): SBr[-1] = SBincl
 
-        self.BBr, self.SBr = [tuple(t) for t in BBr], [tuple(t) for t in SBr]
+        self.BBr, self.SBr = [tuple(sorted(t)) for t in BBr], [tuple(sorted(t)) for t in SBr]
         wrt = self.gen(BBr, SBr, possibles)
         fqt = self.genf(BBr, SBr)
         self.cvt(wrt, fqt)
@@ -48,7 +48,7 @@ class RealtimeProcesser(RangeProcesser):
         return self.hs2s(self.is2h(i, BB))
 
     def h2i(self, h, BB = True):
-        return self.BB2i[h] if BB else self.SB2i[h]
+        return self.BB2i[tuple(sorted(h))] if BB else self.SB2i[tuple(sorted(h))]
 
     @classmethod
     def hs2s(self, hs):

@@ -38,6 +38,13 @@ class GameTree():
         nHands, nChild = (self.BBh if self.isBB else self.SBh), len(self.children)
         self.actprob = np.full((nChild, nHands), 1 / nChild)
 
+    def CTsignature(self, suppress = True, eps = 0.1):
+        ans = {}
+        for i, c in enumerate(self.children):
+            if (not suppress) or np.sum(self.actprob[i]) > eps:
+                ans[c.signature] = c.CTsignature(suppress, eps)
+        return ans
+
     def lock(self, depth = 1):
         self.train = False
         if depth > 1:
@@ -54,6 +61,8 @@ class GameTree():
         for c in self.children:
             if c.signature == signatures[0]:
                 return c.find(*(signatures[1:]))
+            elif signatures[0] == 1 and c.signature == SIGCALLIN:
+                return c.find(*(signatures[1:]))
         return None
 
     def marked(self):
@@ -69,7 +78,7 @@ class GameTree():
         # DEBUG
         poss = [c.signature for c in self.children]
         # print(f"[DEBUG][deep.condprob] poss = {poss}")
-
+        
         for i, c in enumerate(self.children):
             if c.signature == signatures[0]:
                 BBr, SBr = c.condprob(*(signatures[1:]))
@@ -77,7 +86,10 @@ class GameTree():
                     return BBr * self.actprob[i], SBr
                 else:
                     return BBr, SBr * self.actprob[i]
-        
+
+        # cannot find, when call is equiv allin
+
+
         # error
         poss = [c.signature for c in self.children]
         raise ValueError(f"couldn't find signatures {signatures} within {poss}!")
@@ -118,26 +130,20 @@ class GameTree():
             for i, c in enumerate(self.children):
                 print(f"[SIG] {c.signature}")
                 if self.isBB: 
-                    tmp4 = tmp[i][0] / (condp[i][0] * SBr * self.rp.fq[0])
+                    tmp4 = tmp[i][100] / (condp[i][100] * SBr * self.rp.fq[100])
                 else: 
-                    tmp4 = tmp[i][:, 0] / (condp[i][0] * BBr * self.rp.fq[0])
+                    tmp4 = tmp[i][:, 100] / (condp[i][100] * BBr * self.rp.fq[100])
                 with np.printoptions(precision = 3, suppress = True):
                     print(tmp4)
             
+            '''
             if self.isBB:
-                tmp = ((tmp2)[:, 0] / BBr[0]) / np.sum(self.rp.fq[0] * SBr)
+                tmp = ((tmp2)[:, 100] / BBr[100]) / np.sum(self.rp.fq[100] * SBr)
                 opp = SBr / np.sum(SBr) * 100
             else:
-                tmp = ((tmp2)[:, 0] / SBr[0]) / np.sum(self.rp.fq[0] * BBr)
+                tmp = ((tmp2)[:, 100] / SBr[100]) / np.sum(self.rp.fq[100] * BBr)
                 opp = BBr / np.sum(BBr) * 100
-            tmp3 = np.maximum(self.actprob[:, 0], 1e-3)
-
-            ptr = self.find(1)
-            for i, c in enumerate(ptr.children):
-                if c.signature == -2: # SIGCALLIN
-                    with np.printoptions(precision = 0, suppress = True):
-                        print(f"CALLIN p = \n{ptr.actprob[i] * 100}")
-                    break
+            tmp3 = np.maximum(self.actprob[:, 100], 1e-3)
 
             with np.printoptions(precision = 0, suppress = True):
                 print("\nopp =")
@@ -145,6 +151,7 @@ class GameTree():
             with np.printoptions(precision = 3, suppress = True):
                 print(tmp / (np.max(tmp) if self.isBB else np.min(tmp)), tmp3)
             print(tmp)
+            '''
         '''
         if self.mark:
             # print(tmp)
@@ -168,8 +175,7 @@ class GameTree():
         if self.term: return self.signature
         return (self.signature, tuple(c.getTree() for c in self.children))
 
-    def show(self, msg = None, suppress = True):
-        eps = 0.1
+    def show(self, msg = None, suppress = True, verbose = False, eps = 0.1):
         if not self.term:
             if msg is None: prefix = ""
             else: prefix = msg + " - "
@@ -177,9 +183,10 @@ class GameTree():
                 for i, c in enumerate(self.children):
                     if (not suppress) or np.sum(self.actprob[i]) > eps:
                         print(prefix + c.msg, self.actprob[i], sep = '\n')
-            for i, c in enumerate(self.children):
-                if (not suppress) or np.sum(self.actprob[i]) > eps:
-                    c.show(prefix + c.msg)
+            if verbose:
+                for i, c in enumerate(self.children):
+                    if (not suppress) or np.sum(self.actprob[i]) > eps:
+                        c.show(prefix + c.msg)
 
 SIGROOT = -1
 class ROOT(GameTree):

@@ -3,6 +3,7 @@ from eqcalc.test import testrs as eqtestrs
 from test.test import test
 from pre.test import testrp, testrs, testeq, testpostAoF
 from eqcalc.testdeep import testdeep, testpreflopper, testspec
+from pre.equireader import Equireader as EQ
 
 # testarr()
 # testwr()
@@ -19,5 +20,9 @@ from eqcalc.testdeep import testdeep, testpreflopper, testspec
 
 # testdeep()
 # testpreflopper()
-testspec()
+#testspec()
+eq = EQ()
+for i in range(21):
+    print(f"{i} ::")
+    eq.showeq(i)
 

@@ -20,8 +20,9 @@ from pre.test import testrs as testrs2
 # EZ().gen()
 DEZ().gen()
 #eq = EQ()
-#for i in range(850, 1150, 10):
-#    print(f"wr({i}): {eq.wr(18, i)}")
+#for i in range(21):
+#    print(f"{i} ::")
+#    print(eq.showeq(i))
 
 #testrp()
 #testrs2()

@@ -7,6 +7,7 @@ class ConsolePlayer(BasePokerPlayer):
         self.input_receiver = (
             input_receiver if input_receiver else self.__gen_raw_input_wrapper()
         )
+        self.ignoreTL = True
 
     def declare_action(self, valid_actions, hole_card, round_state):
         print(

@@ -24,7 +24,7 @@ class BasePokerPlayer(object):
     """
 
     def __init__(self):
-        pass
+        self.ignoreTL = False
 
     def declare_action(self, valid_actions, hole_card, round_state):
         err_msg = self.__build_err_msg("declare_action")
@@ -58,15 +58,14 @@ class BasePokerPlayer(object):
         valid_actions, hole_card, round_state = self.__parse_ask_message(message)
 
         # [MODIFIED] SHOW ERROR
-        action, amount = self.declare_action(valid_actions, hole_card, round_state)
-
-        '''
-        try:
-            with timeout(5):
-                action, amount = self.declare_action(valid_actions, hole_card, round_state)
-        except:
-            action, amount = valid_actions[0]["action"], valid_actions[0]["amount"]
-        '''
+        if self.ignoreTL:
+            action, amount = self.declare_action(valid_actions, hole_card, round_state)
+        else:
+            try:
+                with timeout(20):
+                    action, amount = self.declare_action(valid_actions, hole_card, round_state)
+            except:
+                action, amount = valid_actions[0]["action"], valid_actions[0]["amount"]
 
         return action, amount
 

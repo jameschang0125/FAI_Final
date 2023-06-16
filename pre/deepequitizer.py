@@ -6,6 +6,7 @@ from functools import partialmethod
 from eqcalc.deep import *
 from subagent.heuristics import *
 from subagent.newclass import PreRangeProcesser as PRP
+import sys
 
 class DeepEquitizer():
     '''
@@ -41,7 +42,6 @@ class DeepEquitizer():
 
     @classmethod
     def _iswin(self, turn, x):
-        u, d = self.size + self.__thre(turn, True), self.size - self.__thre(turn, False)
         return self.__win(turn, x - self.offset)
 
     def _calc(self, turn, x):
@@ -51,7 +51,7 @@ class DeepEquitizer():
 
         nIter, decay = 700, 0.99
 
-        cur = State(BBchip, turn = turn, equitizer = self)
+        cur = State(x + self.offset, turn = turn, equitizer = self).to()
         gt = BLINDS(PRP(), cur, {
             FOLD: None,
             LIMP: {
@@ -66,7 +66,7 @@ class DeepEquitizer():
                         PRECALL: None,
                         ALLIN: {
                             FOLD: None,
-                            CALLIN, None
+                            CALLIN: None
                         }
                     } for j in [2.5, 3, 3.5, 4] },
                     ALLIN: {
@@ -89,7 +89,7 @@ class DeepEquitizer():
                     PRECALL: None,
                     ALLIN: {
                         FOLD: None,
-                        CALLIN, None
+                        CALLIN: None
                     }
                 } for j in [2.5, 3, 3.5, 4]},
                 ALLIN: {
@@ -105,7 +105,8 @@ class DeepEquitizer():
 
         for i in range(nIter):
             v = gt.update()
-        return v, gt
+
+        return v, gt.CTsignature()
 
     def __gen(self, turn, workers = 40, **kwargs):
         '''
@@ -133,6 +134,8 @@ class DeepEquitizer():
         for i in range(21):
             print(f"[PROGRESS] equitizer.__gen({i})")
             self.__gen(i, **kwargs)
+            with np.printoptions(precision = 4, suppress = True):
+                print(self.eq[i])
 
         if eqpath is not None:
             with open(eqpath, 'wb') as f:

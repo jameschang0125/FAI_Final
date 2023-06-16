@@ -6,7 +6,7 @@ from pre.equitizer import Equitizer as EQ
 
 class Equireader(EQ):
     def __init__(self, 
-                eqpath = "pre/res/AoFeq.pickle", 
+                eqpath = "pre/res/Deepeq.pickle", # "pre/res/AoFeq.pickle", 
                 BBrpath = "pre/res/AoFBBr.pickle", 
                 SBrpath = "pre/res/AoFSBr.pickle"):
 
@@ -22,4 +22,5 @@ class Equireader(EQ):
                 self.SBr = pickle.load(f)
     
     def showeq(self, turn):
-        print(self.eq[turn])
+        with np.printoptions(precision = 4, suppress = True):
+            print(self.eq[turn])

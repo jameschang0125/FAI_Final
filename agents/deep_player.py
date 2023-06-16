@@ -19,6 +19,8 @@ class MyPlayer(BasePokerPlayer):
         self.s2suit = {s: i for i, s in enumerate(list("CDHS"))}
         self.s2rank = {s: i + 2 for i, s in enumerate(list("23456789TJQKA"))}
 
+        self.ignoreTL = True
+
     def transform(self, msgs):
         # no need for FOLD or CALLIN
         ans, shoved = [], False
@@ -116,7 +118,7 @@ class MyPlayer(BasePokerPlayer):
     def receive_round_start_message(self, round_count, hole_card, seats):
         self.hand = tuple(sorted((self.s2c(c) for c in hole_card)))
         self.isBB = seats[0]["uuid"] == self.uuid if (self.isBB is None) else (not self.isBB)
-        self.turn = 20 - round_count
+        self.turn = 21 - round_count
         self.allined = False
         self.sleep = False
         if self.debug or self.showhand: print(f"[DEBUG] self.hand = {Shower.h2s(self.hand)}")
@@ -128,6 +130,10 @@ class MyPlayer(BasePokerPlayer):
                 self.my = s["stack"] + (10 if self.isBB else 5)
             else:
                 self.opp = s["stack"] + (5 if self.isBB else 10)
+        
+        tmp = (2000 - self.my - self.opp) / 2
+        self.my += tmp
+        self.opp += tmp
         
         if self.debug: print(f"[DEBUG][player.roundstart] {self.my} vs {self.opp}")
 
@@ -166,16 +172,16 @@ class MyPlayer(BasePokerPlayer):
         except Exception as e:
             print(f"[STACK] {self.my} vs {self.opp}")
             print(f"[VALUE] {self.allined}, {self.sleep}")
-            print(f"[OTHER]{street}, {round_state}")
+            print(f"[OTHER] {street}, {round_state}, {self.actions}")
             try:
                 print(f"preTree: {json.dumps(self.pre.gt.getTree(), indent = 4)}")
-            except:
-                pass
+            except Exception as e2:
+                print(repr(e2))
             try:
                 print(f"postTree: {json.dumps(self.post.gt.getTree(), indent = 4)}")
-            except:
-                pass
-            print(e)
+            except Exception as e2:
+                print(repr(e2))
+            print(repr(e))
 
 
     def receive_game_update_message(self, action, round_state):

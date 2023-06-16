@@ -24,10 +24,11 @@ from baseline5 import setup_ai as baseline5_ai
 
 import traceback
 
-# ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, my_ai, call_ai, random_ai]
-ais = [baseline5_ai]
+ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, quiet_ai, call_ai, random_ai]
+# ais = [baseline4_ai, baseline5_ai]
 
-def play(id, verbose = 0, pe = False, **kwargs):
+
+def play(id, verbose = 0, pe = True, **kwargs):
     try:
         config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
         my = deep_ai(**kwargs)
@@ -49,15 +50,14 @@ def play(id, verbose = 0, pe = False, **kwargs):
                 y = d["stack"]
         
         tmp = 1 if x > y else (0 if x < y else 0.5)
-        return 1 - tmp if switched else tmp
+        return tmp
     except Exception as e:
         if pe:
-            print(f"[SWITCH = {switched}][#{id}] {repr(e)}")
-            traceback.print_exc()
+            traceback.print_exc(file = sys.stdout)
         return None
 
 if __name__ == '__main__':
-    N = 100
+    N = 2000
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40, chunksize = 1)
@@ -68,12 +68,10 @@ if __name__ == '__main__':
                 errs.append(i)
                 errcnt += 1
             else:
-                wins += i
+                wins += v
                 cnt += 1
 
         p = wins / cnt
         stderr = (p * (1 - p) / cnt) ** 0.5
-        print(p, stderr, errcnt / N)
-        sys.stdout.flush()
         print(f"[RESULT] winrate = {'%.4f'%p} ± {'%.4f'%(stderr * 1.96)}, errrate = {'%.4f'%(errcnt/N)}")
         print(f"[ERROR LIST] {errs}")

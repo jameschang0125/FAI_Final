@@ -86,6 +86,7 @@ def testdeep():
     gt.show()
 
 from subagent.preflop import preflopper
+from subagent.postflop import postflopper
 def testpreflopper():
     PRE = preflopper()
     myh = ((3, 14), (3, 12)) # AQs
@@ -95,9 +96,23 @@ def testpreflopper():
 
 def testspec():
     PRE = preflopper(debug = True)
-    myh = ((3, 2), (2, 7)) # 27o
+    myh = ((3, 11), (3, 8)) # J8s
     print(f"[TEST] act 1")
-    PRE.act(1003, 3, myh)
+    #PRE.act(1035, 6, myh, nIter = 1)
+    #PRE.gt.mark = True
+    PRE.act(1010, 1, myh, 30)
+
+    '''
+    print(f"[TEST] act 2")
+    POST = postflopper(BBr, SBr, [(2, 6), (3, 14), (0, 8)], SBincl = myh, debug = False)
+    POST.act(975, 8, myh, 20, street = 1)
+    BBr, SBr = POST.ranges(myh, 20, -3)
+
+    POST = postflopper(BBr, SBr, [(2, 6), (3, 14), (0, 8), (0, 8)], SBincl = myh, debug = True)
+    POST.act(975, 8, myh, 60, street = 1)
+    '''
+    #PRE.act(1112, 15, myh, 10, 65)
+    # PRE.act(1010, 3, myh, 15)
     # PRE.gt.find(15, 60).mark = True
     # PRE.act(960, 18, myh, 15, 60)
 
