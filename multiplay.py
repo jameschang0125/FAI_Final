@@ -24,8 +24,8 @@ from baseline5 import setup_ai as baseline5_ai
 
 import traceback
 
-ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, quiet_ai, call_ai, random_ai]
-# ais = [baseline4_ai, baseline5_ai]
+# ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, quiet_ai, call_ai, random_ai]
+ais = [baseline4_ai, baseline5_ai]
 
 
 def play(id, verbose = 0, pe = True, **kwargs):
@@ -57,7 +57,7 @@ def play(id, verbose = 0, pe = True, **kwargs):
         return None
 
 if __name__ == '__main__':
-    N = 2000
+    N = 300
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40, chunksize = 1)

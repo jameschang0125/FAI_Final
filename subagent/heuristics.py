@@ -23,12 +23,16 @@ def HERU(*dist):
                     WIN = self.state(self.SBpaid * mult) * self.rp.fw
                     LOSE = self.state(-self.BBpaid * mult) * self.rp.fq * (1 - self.rp.wr)
                     self.EV += (WIN + LOSE) * prob
+            
+            FEV1, FEV2 = self.state(self.SBpaid), self.state(-self.BBpaid)
+            self.EV = np.maximum(FEV2, np.minimum(FEV1, self.EV))
+
     return _CALL
 
 '''
 be aware! this might make the raiser "get value" from weaker hands
 '''
 PRECALL = CALL #HERU((1, 0.7), (3, 0.3)) #((1, 0.75), (1.5, 0.1), (2, 0.1), (3, 0.05))
-FLOPCALL = CALL #HERU((1, 0.8), (1.5, 0.1), (2, 0.05), (3, 0.05))
-TURNCALL = CALL #HERU((1, 0.85), (1.5, 0.1), (2, 0.05))
+FLOPCALL = CALL # HERU((1, 0.8), (1.5, 0.1), (2, 0.05), (3, 0.05))
+TURNCALL = CALL # HERU((1, 0.85), (1.5, 0.1), (2, 0.05))
 RIVERCALL = CALL
