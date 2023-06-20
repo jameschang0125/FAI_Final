@@ -9,9 +9,9 @@ import numpy as np
 from sklearn.utils import shuffle
 from baseline4 import setup_ai as baseline4_ai
 from baseline5 import setup_ai as baseline5_ai
-from agents.deep_player import setup_ai as deep_ai
-from agents.my_player   import setup_ai as aof_ai
-from agents.dps         import dps
+from src.agents.deep_player import setup_ai as deep_ai
+from src.agents.my_player   import setup_ai as aof_ai
+from src.agents.dps         import dps
 
 bosses = [baseline4_ai, baseline5_ai, aof_ai, deep_ai]
 ais = [*dps]

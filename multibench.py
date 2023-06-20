@@ -10,9 +10,9 @@ from baseline2 import setup_ai as baseline2_ai
 from baseline3 import setup_ai as baseline3_ai
 from baseline4 import setup_ai as baseline4_ai
 from baseline5 import setup_ai as baseline5_ai
-from agents.deep_player     import setup_ai as deep_ai
-from agents.my_player       import setup_ai as aof_ai
-from agents.finale_player   import setup_ai as final_ai
+from src.agents.deep_player     import setup_ai as deep_ai
+from src.agents.my_player       import setup_ai as aof_ai
+from src.agents.finale_player   import setup_ai as final_ai
 
 ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, aof_ai, deep_ai]
 # ais = [baseline4_ai, baseline5_ai, aof_ai]
@@ -45,7 +45,7 @@ def tops(x):
 
 def play(id, num):
     print(f"vs baseline {id} ::")
-    r = process_map(play1, [id for _ in range(num)], max_workers = 40, chunksize = 1)
+    r = process_map(play1, [id for _ in range(num)], max_workers = 20, chunksize = 1)
 
     wins, errcnt, decTimes, recTimes = 0, 0, np.zeros((4, num)), np.zeros((4, num))
     for i, x in enumerate(r):
@@ -68,4 +68,4 @@ def play(id, num):
 
 if __name__ == '__main__':
     for i in range(len(ais)):
-        play(i, 4200)
+        play(i, 100)
