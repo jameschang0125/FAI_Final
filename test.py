@@ -20,9 +20,9 @@ from pre.equireader import Equireader as EQ
 
 # testdeep()
 # testpreflopper()
-#testspec()
-eq = EQ()
-for i in range(21):
-    print(f"{i} ::")
-    eq.showeq(i)
+testspec()
+# eq = EQ()
+#for i in range(21):
+#    print(f"{i} ::")
+#    eq.showeq(i)
 

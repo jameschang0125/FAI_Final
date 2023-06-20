@@ -11,6 +11,7 @@ from agents.my_player import setup_ai as my_ai
 from agents.my_player import quiet_ai, test_ai
 from random import random
 from agents.deep_player import setup_ai as deep_ai
+from agents.dps import setup_ai as dps_ai
 
 # from extern.skywalker_2 import setup_ai as casper_ai
 import numpy as np
@@ -24,25 +25,22 @@ from baseline5 import setup_ai as baseline5_ai
 
 import traceback
 
-# ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, quiet_ai, call_ai, random_ai]
-ais = [baseline4_ai, baseline5_ai]
 
+ais = [baseline4_ai, baseline5_ai, quiet_ai, deep_ai]
 
-def play(id, verbose = 0, pe = True, **kwargs):
+def play2(x, y, verbose = 0, pe = False, **kwargs):
     try:
         config = setup_config(max_round = 20, initial_stack = 1000, small_blind_amount = 5)
-        my = deep_ai(**kwargs)
         if random() < 0.5:
-            config.register_player(name = "me", algorithm = my)
-            config.register_player(name = "opp", algorithm = ais[id]())
+            config.register_player(name = "me", algorithm = x())
+            config.register_player(name = "opp", algorithm = y())
             switched = False
         else:
-            config.register_player(name = "opp", algorithm = ais[id]())
-            config.register_player(name = "me", algorithm = my)
+            config.register_player(name = "opp", algorithm = y())
+            config.register_player(name = "me", algorithm = x())
             switched = True
 
         res = start_poker(config, verbose = verbose)
-
         for d in res["players"]:
             if d["name"] == "me":
                 x = d["stack"]
@@ -56,8 +54,12 @@ def play(id, verbose = 0, pe = True, **kwargs):
             traceback.print_exc(file = sys.stdout)
         return None
 
+def play(id, verbose = 0, pe = False, **kwargs):
+    my = dps_ai(**kwargs)
+    return play2(my, ais[id], verbose, pe)
+
 if __name__ == '__main__':
-    N = 300
+    N = 100
     for a in range(len(ais)):
         print(f"vs baseline {a} ::")
         r = process_map(play, [a for _ in range(N)], max_workers = 40, chunksize = 1)

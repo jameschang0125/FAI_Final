@@ -50,4 +50,4 @@ class State():
         return self.eqt.wr(self.turn, self.my + x) if self.isBB else 1 - self.eqt.wr(self.turn, 2000 - self.my - x)
 
     def to(self, my = 0):
-        return State(self.my + my, self.isBB, self.turn - 1, equitizer = self.eqt)
+        return State(self.my + my, not self.isBB, self.turn - 1, equitizer = self.eqt)

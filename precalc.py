@@ -6,6 +6,7 @@ from pre.equireader import Equireader as EQ
 from pre.deepequitizer import DeepEquitizer as DEZ
 from pre.test import testrp
 from pre.test import testrs as testrs2
+from pre.bestrsize import run
 
 # WR.allWR()
 # WR.paraWR(n = 100000, dumppath = "pre/res/wr5_100k.pickle")
@@ -18,7 +19,7 @@ from pre.test import testrs as testrs2
 # testAoF()
 
 # EZ().gen()
-DEZ().gen()
+# DEZ().gen()
 #eq = EQ()
 #for i in range(21):
 #    print(f"{i} ::")
@@ -26,3 +27,5 @@ DEZ().gen()
 
 #testrp()
 #testrs2()
+
+run()

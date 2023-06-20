@@ -12,13 +12,13 @@ class GameTree():
         self.state = None #state
         self.isBB = False # True if BB is going to choose from actions
         self.lr, self.decay = lr, decay
-        self.BBpaid, self.SBpaid = 0, 0
+        self.BBpaid, self.SBpaid, self.pot = 0, 0, 0
         self.term = False
         self.msg = ""
         self.train = True
         self.children = []
         self.signature = SIGGT
-        self.mark = False # DEBUG purpose
+        self.mark = None # DEBUG purpose
         # inherited class initialize, then construct child
         # print(f"[CONSTRUCTOR] {type(self)}")
 
@@ -65,10 +65,10 @@ class GameTree():
                 return c.find(*(signatures[1:]))
         return None
 
-    def marked(self):
-        self.mark = True
+    def marked(self, marker = 0):
+        self.mark = marker
         for c in self.children:
-            c.marked()
+            c.marked(marker)
 
     def condprob(self, *signatures):
         if len(signatures) == 0: 
@@ -126,13 +126,16 @@ class GameTree():
                     self.actprob[t][i] += self.lr
         
         # DEBUG
-        if self.mark:
+        if self.mark is not None:
+            marker = self.mark
+            print("---")
+            print(tmp2[:, marker])
             for i, c in enumerate(self.children):
                 print(f"[SIG] {c.signature}")
                 if self.isBB: 
-                    tmp4 = tmp[i][100] / (condp[i][100] * SBr * self.rp.fq[100])
+                    tmp4 = tmp[i][marker] / (condp[i][marker] * SBr * self.rp.fq[marker])
                 else: 
-                    tmp4 = tmp[i][:, 100] / (condp[i][100] * BBr * self.rp.fq[100])
+                    tmp4 = tmp[i][:, marker] / (condp[i][marker] * BBr * self.rp.fq[marker])
                 with np.printoptions(precision = 3, suppress = True):
                     print(tmp4)
             
@@ -210,7 +213,7 @@ class InheritGT(GameTree):
         self.isBB = not gt.isBB
         self.BBh, self.SBh = gt.BBh, gt.SBh
         self.lr, self.decay = gt.lr, gt.decay
-        self.BBpaid, self.SBpaid = gt.BBpaid, gt.SBpaid
+        self.BBpaid, self.SBpaid, self.pot = gt.BBpaid, gt.SBpaid, gt.pot
 
 # terminals
 # CALL incl. terminal CHECKS
@@ -238,6 +241,9 @@ class CALL(InheritGT):
         WIN = self.state(self.SBpaid) * self.rp.fq * self.rp.wr
         LOSE = self.state(-self.BBpaid) * self.rp.fq * (1 - self.rp.wr)
         self.EV = WIN + LOSE
+        
+        # DEBUG
+        self.WIN, self.LOSE = WIN, LOSE
     
     def update(self, BBr, SBr):
         return np.outer(BBr, SBr) * self.EV
@@ -265,8 +271,8 @@ def RAISE(x = None, msg = "R"):
             self.msg = msg
             self.signature = 1 if x is None else x
             if x is not None:
-                if not self.isBB: self.BBpaid = x
-                else: self.SBpaid = x
+                if not self.isBB: self.BBpaid = x + self.pot // 2
+                else: self.SBpaid = x + self.pot // 2
             self._buildChild(ct)
     return _RAISE
 
@@ -293,6 +299,7 @@ def POT(x = None, y = None):
     class _POT(ROOT):
         def __init__(self, rp, state, ct, **kwargs):
             super().__init__(rp, state, **kwargs)
+            self.pot = x
             if x is not None:
                 if y is None:
                     self.BBpaid = x / 2

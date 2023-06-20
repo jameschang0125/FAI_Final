@@ -11,11 +11,11 @@ from util.shower import Shower
 from collections import ChainMap # aggregate dict
 
 class preflopper():
-    def __init__(self, debug = False, hiru = None):
+    def __init__(self, debug = False, heur = None):
         self.debug = debug
         self.rp = PRP()
         self.eq = EQ()
-        self.call = PRECALL if hiru is None else hiru
+        self.call = CALL if heur is None else heur
     
     def RTREE(self, x, BB = False):
         if x > self.cur.thre(BB): return ALLINTREE
@@ -100,7 +100,7 @@ class preflopper():
             BB = not BB
         return ans
 
-    def act(self, BBchip, turn, myh, *actions, nIter = 250, verbose = False):
+    def act(self, BBchip, turn, myh, *actions, nIter = 160, verbose = False):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature
@@ -123,6 +123,9 @@ class preflopper():
         elif hasattr(self, 'gt'):
             pass
         elif len(actions) == 0:
+            # edge case: FOLD = LOSE
+            if cur.thre(BB = False) < 10: return 1
+
             self.gt = self.SB_default(cur)
         elif len(actions) == 1:
             self.gt = self.BB_default(cur, actions[0])

@@ -94,23 +94,51 @@ def testpreflopper():
     sseq = PRE.act(1000, 15, myh, init, 65, debug = True) # SB
     print(f"init: {init}, sseq: {sseq}")
 
+from util.shower import Shower
 def testspec():
     PRE = preflopper(debug = True)
     myh = ((3, 11), (3, 8)) # J8s
     print(f"[TEST] act 1")
     #PRE.act(1035, 6, myh, nIter = 1)
     #PRE.gt.mark = True
-    PRE.act(1010, 1, myh, 30)
-
+    PRE.act(1050, 10, myh)
+    #PRE.act(1050, 10, myh, 10, 56, nIter = 1)
+    #PRE.gt.find(10, 56).mark = 0
+    PRE.act(1050, 10, myh, 10, 56)
     '''
-    print(f"[TEST] act 2")
-    POST = postflopper(BBr, SBr, [(2, 6), (3, 14), (0, 8)], SBincl = myh, debug = False)
-    POST.act(975, 8, myh, 20, street = 1)
-    BBr, SBr = POST.ranges(myh, 20, -3)
-
-    POST = postflopper(BBr, SBr, [(2, 6), (3, 14), (0, 8), (0, 8)], SBincl = myh, debug = True)
-    POST.act(975, 8, myh, 60, street = 1)
+    ptr = PRE.gt.find(10, 56, SIGCALL)
+    print(ptr.SBpaid, ptr.BBpaid, ptr.state(-56), ptr.state(56))
+    print(ptr.state(56) * ptr.rp.wr[0])
+    print(ptr.state(-56) * (1 - ptr.rp.wr[0]))
+    print(ptr.state(-56) * (1 - ptr.rp.wr[0]) + ptr.state(56) * ptr.rp.wr[0])
+    print('---')
+    print(ptr.WIN[0] / ptr.rp.fq[0])
+    print(ptr.LOSE[0] / ptr.rp.fq[0])
+    print(ptr.EV[0] / ptr.rp.fq[0])
+    print(ptr)
     '''
+    #BBr, SBr = PRE.ranges(myh, 30, -3)
+
+    # print(f"[DEBUG][postflop.ranges]: \nBBr = {Shower.hs2s(BBr)}\nSBr = {Shower.hs2s(SBr)}")
+    #print(f"[TEST] act 2")
+    #POST = postflopper(BBr, SBr, [(2, 6), (3, 14), (0, 8)], BBincl = myh, debug = True)
+    # POST.act(980, 18, myh, 60, 10, street = 1, nIter = 1)
+    #print(f"marking id = {POST.rp.i2h(-1)}")
+    #POST.gt.find(10).mark = -1
+    #POST.act(980, 18, myh, 60, 10, street = 1)
+    #cnode, fnode = POST.gt.find(10, -3), POST.gt.find(10, -4)
+    #print(f"CALL: {cnode.BBpaid}, {cnode.SBpaid}")
+    #print(cnode.EV[-1])
+    #print(f"CALL: {fnode.BBpaid}, {fnode.SBpaid}")
+    #print(fnode.EV[-1])
+    #print(f"wr:\n{POST.rp.wr[-1]}")
+    
+    # BBr, SBr = POST.ranges(myh, 20, -3)
+
+
+    #POST = postflopper(BBr, SBr, [(2, 6), (3, 14), (0, 8), (0, 8)], SBincl = myh, debug = True)
+    #POST.act(975, 8, myh, 60, street = 1)
+    
     #PRE.act(1112, 15, myh, 10, 65)
     # PRE.act(1010, 3, myh, 15)
     # PRE.gt.find(15, 60).mark = True

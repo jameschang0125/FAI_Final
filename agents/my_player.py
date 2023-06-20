@@ -42,26 +42,29 @@ class MyPlayer(BasePokerPlayer):
         
         if self.allined: return self.A()
 
-        if round_state['street'] == 'preflop':
-            if self.isBB:
-                rsize = round_state['action_histories']['preflop'][2]['amount']
-                act, self.myr, self.oppr = self.pre.calc(self.my, self.turn, rsize, self.cards)
-                # if self.debug: print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
-                if act == 2: return self.A()
-                else: return self.C() if act == 1 else self.F()
-            else:
-                rsize = 1000
-                act, self.oppr, self.myr = self.pre.calc(self.opp, self.turn, rsize, self.cards, BB = False)
-                return self.A() if act else self.F()
-        else: # POSTFLOP BB
-            street = round_state['street']
-            rsize, SB_C = round_state['action_histories'][street][0]['amount'], False
-            if rsize == 0: 
-                rsize, SB_C = 1000, True # A
-            act_C, act_R, self.myr, self.oppr = self.post.calc(self.my, self.turn, self.pot, rsize, \
-                                                      self.myr, self.cards, self.oppr, self.comm)
-            act = act_C if SB_C else act_R
-            return self.A() if act == 1 else self.CF()
+        try:
+            if round_state['street'] == 'preflop':
+                if self.isBB:
+                    rsize = round_state['action_histories']['preflop'][2]['amount']
+                    act, self.myr, self.oppr = self.pre.calc(self.my, self.turn, rsize, self.cards)
+                    # if self.debug: print(f"[DEBUG] BB: myh = {myh}, c[myh] = {c[myh]}, c = \n{c}\nshoving: {self.SS.r2s(c)}")
+                    if act == 2: return self.A()
+                    else: return self.C() if act == 1 else self.F()
+                else:
+                    rsize = 1000
+                    act, self.oppr, self.myr = self.pre.calc(self.opp, self.turn, rsize, self.cards, BB = False)
+                    return self.A() if act else self.F()
+            else: # POSTFLOP BB
+                street = round_state['street']
+                rsize, SB_C = round_state['action_histories'][street][0]['amount'], False
+                if rsize == 0: 
+                    rsize, SB_C = 1000, True # A
+                act_C, act_R, self.myr, self.oppr = self.post.calc(self.my, self.turn, self.pot, rsize, \
+                                                        self.myr, self.cards, self.oppr, self.comm)
+                act = act_C if SB_C else act_R
+                return self.A() if act == 1 else self.CF()
+        except:
+            return self.CF()
 
     def CF(self):
         call = self.valids[1]["amount"] == 0

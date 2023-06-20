@@ -10,16 +10,21 @@ from util.shower import Shower
 from pre.equitizer import Equitizer as EQ
 import json
 
-class MyPlayer(BasePokerPlayer):
-    def __init__(self, debug = False, showhand = False, **kwargs):
+class DeepPlayer(BasePokerPlayer):
+    def __init__(self, debug = False, showhand = False, 
+                 preTemplate = None, postTemplate = None, printerror = True, **kwargs):
         self.isBB = None
         self.debug = debug
         self.showhand = showhand
+        self.printerror = printerror
 
         self.s2suit = {s: i for i, s in enumerate(list("CDHS"))}
         self.s2rank = {s: i + 2 for i, s in enumerate(list("23456789TJQKA"))}
 
         self.ignoreTL = True
+
+        self.preTemplate = PRE if preTemplate is None else preTemplate
+        self.postTemplate = POST if postTemplate is None else postTemplate
 
     def transform(self, msgs):
         # no need for FOLD or CALLIN
@@ -42,36 +47,54 @@ class MyPlayer(BasePokerPlayer):
             
         if self.debug: print(f"[DEBUG][player.transform] msgs = {msgs}, ans = {ans}")
         return ans
+    
+    def declare_action(self, *args):
+        return self._declare_action(*args)
 
-    def declare_action(self, valid_actions, hole_card, round_state):
-        if self.debug: print(f"[DEBUG][player.declare...] street = {round_state['street']}")
-        self.valids = valid_actions
-        if self.allined: return self.A()
+    def _declare_action(self, valid_actions, hole_card, round_state):
+        try:
+            if self.debug: print(f"[DEBUG][player.declare...] street = {round_state['street']}")
+            self.valids = valid_actions
+            if self.allined: return self.A()
 
-        BBchip = self.my if self.isBB else self.opp
+            BBchip = self.my if self.isBB else self.opp
 
-        if round_state['street'] == 'preflop':
-            tmp = EQ._iswin(self.turn, BBchip)
-            if tmp is not None:
-                self.sleep = True
-                if tmp == 1:
-                    return self.F() if self.isBB else self.A()
-                if tmp == 0:
-                    return self.A() if self.isBB else self.F()
+            if round_state['street'] == 'preflop':
+                tmp = EQ._iswin(self.turn, BBchip)
+                if tmp is not None:
+                    self.sleep = True
+                    if tmp == 1:
+                        return self.F() if self.isBB else self.A()
+                    if tmp == 0:
+                        return self.A() if self.isBB else self.F()
 
-            self.actions = self.transform(round_state['action_histories']['preflop'][2:])
-            if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
-            action = self.pre.act(BBchip, self.turn, self.hand, *self.actions)
-            # self.actions.append(action)
-            return self.act(action)
-        else: # POSTFLOP
-            street = round_state['street']
-            streetid = STREETFLOP if street == 'flop' else (STREETTURN if street == 'turn' else STREETRIVER)
-            self.actions = self.transform(round_state['action_histories'][street])
-            if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
-            action = self.post.act(BBchip, self.turn, self.hand, self.pot, *self.actions, street = streetid)
-            # self.actions.append(action)
-            return self.act(action)
+                self.actions = self.transform(round_state['action_histories']['preflop'][2:])
+                if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
+                action = self.pre.act(BBchip, self.turn, self.hand, *self.actions)
+                # self.actions.append(action)
+                return self.act(action)
+            else: # POSTFLOP
+                street = round_state['street']
+                streetid = STREETFLOP if street == 'flop' else (STREETTURN if street == 'turn' else STREETRIVER)
+                self.actions = self.transform(round_state['action_histories'][street])
+                if self.debug: print(f"[DEBUG][player.declare_action] self.actions = {self.actions}")
+                action = self.post.act(BBchip, self.turn, self.hand, self.pot, *self.actions, street = streetid)
+                # self.actions.append(action)
+                return self.act(action)
+        except Exception as e:
+            if self.printerror:
+                print("\n----------------------------------")
+                print(repr(e))
+                try:
+                    print(self.pre.transform(self.actions, self.pre.cur))
+                except:
+                    pass
+                try:
+                    print(self.post.transform(self.actions, self.post.cur))
+                except:
+                    pass
+                print(round_state)
+            return self.CF()
 
     def act(self, action):
         if self.debug: print(f"[DEBUG][player.act] {action}")
@@ -134,10 +157,14 @@ class MyPlayer(BasePokerPlayer):
         tmp = (2000 - self.my - self.opp) / 2
         self.my += tmp
         self.opp += tmp
+        self.pre, self.post = None, None
         
         if self.debug: print(f"[DEBUG][player.roundstart] {self.my} vs {self.opp}")
 
-    def receive_street_start_message(self, street, round_state):
+    def receive_street_start_message(self, *args):
+        return self._receive_street_start_message(*args)
+
+    def _receive_street_start_message(self, street, round_state):
         if self.debug: print(f"[DEBUG][player.receive...] street = {street}")
 
         if EQ._iswin(self.turn, self.my) is not None: return
@@ -152,36 +179,37 @@ class MyPlayer(BasePokerPlayer):
         # [DEBUG] tmp
         try:
             if street == "preflop":
-                self.pre = PRE(debug = self.debug)
+                self.pre = self.preTemplate(debug = self.debug)
             elif street == "flop":
                 self.actions = self.transform(round_state['action_histories']['preflop'][2:])
                 if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
                 BBr, SBr = self.pre.ranges(self.hand, *self.actions)
-                if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
-                else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
+                if self.isBB: self.post = self.postTemplate(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
+                else: self.post = self.postTemplate(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
             else:
                 minSamples = 50 if street == "turn" else 26
                 prev = "flop" if street == "turn" else "turn"
                 self.actions = self.transform(round_state['action_histories'][prev])
                 if self.debug: print(f"[DEBUG][player.receive...] self.actions = {self.actions}")
                 BBr, SBr = self.post.ranges(self.hand, *self.actions, minSamples = minSamples)
-                if self.isBB: self.post = POST(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
-                else: self.post = POST(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
+                if self.isBB: self.post = self.postTemplate(BBr, SBr, self.comm, BBincl = self.hand, debug = self.debug) 
+                else: self.post = self.postTemplate(BBr, SBr, self.comm, SBincl = self.hand, debug = self.debug) 
         except KeyboardInterrupt:
             exit()
         except Exception as e:
-            print(f"[STACK] {self.my} vs {self.opp}")
-            print(f"[VALUE] {self.allined}, {self.sleep}")
-            print(f"[OTHER] {street}, {round_state}, {self.actions}")
-            try:
-                print(f"preTree: {json.dumps(self.pre.gt.getTree(), indent = 4)}")
-            except Exception as e2:
-                print(repr(e2))
-            try:
-                print(f"postTree: {json.dumps(self.post.gt.getTree(), indent = 4)}")
-            except Exception as e2:
-                print(repr(e2))
-            print(repr(e))
+            if self.printerror:
+                print(f"[STACK] {self.my} vs {self.opp}")
+                print(f"[VALUE] {self.allined}, {self.sleep}")
+                print(f"[OTHER] {street}, {round_state}, {self.actions}")
+                try:
+                    print(f"preTree: {json.dumps(self.pre.gt.getTree(), indent = 4)}")
+                except Exception as e2:
+                    print(repr(e2))
+                try:
+                    print(f"postTree: {json.dumps(self.post.gt.getTree(), indent = 4)}")
+                except Exception as e2:
+                    print(repr(e2))
+                print(repr(e))
 
 
     def receive_game_update_message(self, action, round_state):
@@ -192,4 +220,4 @@ class MyPlayer(BasePokerPlayer):
 
 
 def setup_ai(debug = False, showhand = False):
-    return MyPlayer(debug = debug, showhand = showhand)
+    return DeepPlayer(debug = debug, showhand = showhand)

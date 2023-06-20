@@ -11,13 +11,13 @@ from util.shower import Shower
 from collections import ChainMap # aggregate dict
 
 class postflopper():
-    def __init__(self, *args, debug = False, hiru = None, **kwargs):
+    def __init__(self, *args, debug = False, heur = None, **kwargs):
         # BBr, SBr, comm, BBincl = None, SBincl = None
         self.debug = debug
         self.rp = PRP(*args, **kwargs)
         self.eq = EQ()
 
-        self.call = [FLOPCALL, TURNCALL, RIVERCALL] if hiru is None else hiru
+        self.call = [CALL, CALL, CALL] if heur is None else heur
     
     def RTREE(self, x, street = STREETFLOP, BB = False):
         if x + self.pot / 2 > self.cur.thre(BB = BB): return ALLINTREE
@@ -87,7 +87,7 @@ class postflopper():
             BB = not BB
         return ans
 
-    def act(self, BBchip, turn, myh, pot, *actions, street = STREETFLOP, nIter = 250):
+    def act(self, BBchip, turn, myh, pot, *actions, street = STREETFLOP, nIter = 160):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature
@@ -98,16 +98,20 @@ class postflopper():
         actions = self.transform(actions, cur, pot)
         isBB = len(actions) % 2 == 1
 
-        if len(actions) == 0:
-            self.gt = self.SB_default(cur, pot, street = street)
-        elif len(actions) == 1:
-            self.gt = self.BB_default(cur, pot, actions[0], street = street)
-        else:
+        if len(actions) >= 2:
             self.gt.lock(depth = len(actions) - 1)
             if self.gt.find(*actions) is None:
                 ptr = self.gt.find(*(actions[:-1]))
                 gt = self.RTREE2(actions[-1], BB = not isBB)
                 ptr.addChild(gt)
+        elif hasattr(self, 'gt'):
+            pass
+        elif len(actions) == 0:
+            self.gt = self.SB_default(cur, pot, street = street)
+        elif len(actions) == 1:
+            self.gt = self.BB_default(cur, pot, actions[0], street = street)
+        else:
+            raise ValueError("[PREFLOP] called w/o gt!")
         
         self.gt.reset()
         loader = tqdm(range(nIter)) if debug else range(nIter)
