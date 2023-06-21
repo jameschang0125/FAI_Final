@@ -15,7 +15,7 @@ from src.agents.my_player       import setup_ai as aof_ai
 from src.agents.finale_player   import setup_ai as final_ai
 
 ais = [baseline0_ai, baseline1_ai, baseline2_ai, baseline3_ai, baseline4_ai, baseline5_ai, aof_ai, deep_ai]
-# ais = [baseline4_ai, baseline5_ai, aof_ai]
+ais = [aof_ai]
 tester_ai = final_ai
 
 def play1(id):
@@ -68,4 +68,4 @@ def play(id, num):
 
 if __name__ == '__main__':
     for i in range(len(ais)):
-        play(i, 100)
+        play(i, 400)

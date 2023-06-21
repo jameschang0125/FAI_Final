@@ -4,7 +4,7 @@ import numpy as np
 # positive signature are reserved for raise
 SIGGT = -1
 class GameTree():
-    def __init__(self, lr = 0.3, decay = 0.98, **kwargs):
+    def __init__(self, lr = 0.35, decay = 0.977, **kwargs):
         '''
         [IDEA] lower decay for deeper nodes
         '''

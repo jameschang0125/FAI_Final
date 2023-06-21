@@ -157,7 +157,7 @@ class DeepPlayer(BasePokerPlayer):
         tmp = (2000 - self.my - self.opp) / 2
         self.my += tmp
         self.opp += tmp
-        self.pre, self.post = None, None
+        # self.pre, self.post = None, None
         
         if self.debug: print(f"[DEBUG][player.roundstart] {self.my} vs {self.opp}")
 

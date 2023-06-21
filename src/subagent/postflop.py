@@ -87,7 +87,7 @@ class postflopper():
             BB = not BB
         return ans
 
-    def act(self, BBchip, turn, myh, pot, *actions, street = STREETFLOP, nIter = 160):
+    def act(self, BBchip, turn, myh, pot, *actions, street = STREETFLOP, nIter = 130):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature

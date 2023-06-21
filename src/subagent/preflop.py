@@ -100,7 +100,7 @@ class preflopper():
             BB = not BB
         return ans
 
-    def act(self, BBchip, turn, myh, *actions, nIter = 160, verbose = False):
+    def act(self, BBchip, turn, myh, *actions, nIter = 130, verbose = False):
         '''
         actions: signatures, see eqcalc.deep
         ret : signature
